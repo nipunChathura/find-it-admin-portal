@@ -1,0 +1,220 @@
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { Observable, Subject, of } from 'rxjs';
+import { debounceTime, switchMap, map, takeUntil } from 'rxjs/operators';
+import { MerchantRow, MerchantType } from '../../../core/api/admin-merchants.api';
+import { AdminMerchantsApiService } from '../../../core/api/admin-merchants.api';
+
+export type AddMerchantDialogResult = Omit<MerchantRow, 'merchantId'>;
+
+const STATUS_OPTIONS = [
+  { value: 'ACTIVE', label: 'ACTIVE' },
+  { value: 'INACTIVE', label: 'INACTIVE' },
+];
+
+const MERCHANT_TYPE_OPTIONS = [
+  { value: 'FREE', label: 'FREE' },
+  { value: 'SILVER', label: 'SILVER' },
+  { value: 'GOLD', label: 'GOLD' },
+  { value: 'PLATINUM', label: 'PLATINUM' },
+  { value: 'DIAMOND', label: 'DIAMOND' },
+];
+
+const PARENT_SEARCH_RESULT_LIMIT = 5;
+
+@Component({
+  selector: 'app-add-merchant-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatAutocompleteModule,
+  ],
+  template: `
+    <h2 mat-dialog-title>Add Merchant</h2>
+    <mat-dialog-content>
+      <div class="add-merchant-dialog__field add-merchant-dialog__toggle-wrap">
+        <label class="add-merchant-dialog__label">Merchant or Sub Merchant</label>
+        <mat-button-toggle-group [(ngModel)]="isSubMerchant" name="merchantMode" (ngModelChange)="onMerchantModeChange()">
+          <mat-button-toggle [value]="false">Merchant</mat-button-toggle>
+          <mat-button-toggle [value]="true">Sub Merchant</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      @if (isSubMerchant) {
+        <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+          <mat-label>Search Parent Merchant</mat-label>
+          <input
+            matInput
+            [(ngModel)]="parentMerchantSearchText"
+            name="parentSearch"
+            placeholder="Type to search..."
+            [matAutocomplete]="parentAuto"
+            (ngModelChange)="onParentSearchChange($event)"
+          />
+          <mat-autocomplete
+            #parentAuto="matAutocomplete"
+            (optionSelected)="onParentSelected($event)"
+          >
+            @for (m of parentSearchResults$ | async; track m.merchantId) {
+              <mat-option [value]="m">{{ m.merchantName }}</mat-option>
+            }
+            @empty {
+              @if (parentMerchantSearchText.trim()) {
+                <mat-option disabled>No parent merchants found</mat-option>
+              }
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      }
+
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Merchant Name</mat-label>
+        <input matInput [(ngModel)]="merchantName" name="merchantName" required />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" [(ngModel)]="merchantEmail" name="merchantEmail" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>NIC</mat-label>
+        <input matInput [(ngModel)]="merchantNic" name="merchantNic" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Phone Number</mat-label>
+        <input matInput [(ngModel)]="merchantPhoneNumber" name="merchantPhoneNumber" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Address</mat-label>
+        <input matInput [(ngModel)]="merchantAddress" name="merchantAddress" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Profile Image URL</mat-label>
+        <input matInput [(ngModel)]="merchantProfileImage" name="merchantProfileImage" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Merchant Type</mat-label>
+        <mat-select [(ngModel)]="merchantType" name="merchantType">
+          @for (opt of merchantTypeOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="merchantStatus" name="merchantStatus">
+          @for (opt of statusOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn">Cancel</button>
+      <button mat-raised-button color="primary" (click)="onSave()" type="button">Save</button>
+    </mat-dialog-actions>
+  `,
+  styles: [
+    `
+      mat-dialog-content { min-width: 340px; max-height: 70vh; overflow-y: auto; margin-bottom: 0.5rem; }
+      .add-merchant-dialog__field { width: 100%; display: block; margin-bottom: 0.5rem; }
+      .add-merchant-dialog__toggle-wrap .add-merchant-dialog__label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--mat-sys-on-surface-variant); }
+      mat-dialog-actions { padding-top: 0.5rem; gap: 0.5rem; }
+      mat-dialog-actions button { border: 1px solid var(--mat-sys-outline-variant); }
+      .dialog-cancel-btn { color: #c62828; }
+    `,
+  ],
+})
+export class AddMerchantDialogComponent implements OnInit, OnDestroy {
+  private readonly dialogRef = inject(MatDialogRef<AddMerchantDialogComponent>);
+  private readonly merchantsApi = inject(AdminMerchantsApiService);
+  private readonly destroy$ = new Subject<void>();
+  private readonly parentSearchTerm$ = new Subject<string>();
+
+  readonly statusOptions = STATUS_OPTIONS;
+  readonly merchantTypeOptions = MERCHANT_TYPE_OPTIONS;
+
+  isSubMerchant = false;
+  parentMerchantSearchText = '';
+  parentSearchResults$!: Observable<MerchantRow[]>;
+
+  merchantName = '';
+  merchantEmail = '';
+  merchantNic = '';
+  merchantProfileImage = '';
+  merchantAddress = '';
+  merchantPhoneNumber = '';
+  merchantType: MerchantType = 'FREE';
+  merchantStatus = 'ACTIVE';
+  parentMerchantName = '';
+
+  ngOnInit(): void {
+    this.parentSearchResults$ = this.parentSearchTerm$.pipe(
+      debounceTime(250),
+      switchMap((q) => {
+        const term = (q ?? '').trim();
+        if (!term) return of([]);
+        return this.merchantsApi.getMerchants({ search: term }).pipe(
+          map((list) =>
+            list
+              .filter((m) => !(m.parentMerchantName ?? '').trim())
+              .slice(0, PARENT_SEARCH_RESULT_LIMIT)
+          )
+        );
+      }),
+      takeUntil(this.destroy$)
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onMerchantModeChange(): void {
+    if (!this.isSubMerchant) {
+      this.parentMerchantSearchText = '';
+      this.parentMerchantName = '';
+    }
+  }
+
+  onParentSearchChange(value: string): void {
+    this.parentSearchTerm$.next(value ?? '');
+  }
+
+  onParentSelected(event: { option: { value: MerchantRow } }): void {
+    const m = event.option?.value;
+    if (m) {
+      this.parentMerchantName = m.merchantName ?? '';
+      this.parentMerchantSearchText = this.parentMerchantName;
+    }
+  }
+
+  onSave(): void {
+    this.dialogRef.close({
+      merchantName: this.merchantName.trim(),
+      merchantEmail: this.merchantEmail.trim(),
+      merchantNic: this.merchantNic.trim(),
+      merchantProfileImage: this.merchantProfileImage.trim(),
+      merchantAddress: this.merchantAddress.trim(),
+      merchantPhoneNumber: this.merchantPhoneNumber.trim(),
+      merchantType: this.merchantType,
+      merchantStatus: this.merchantStatus,
+      parentMerchantName: this.isSubMerchant ? this.parentMerchantName.trim() : '',
+    });
+  }
+}

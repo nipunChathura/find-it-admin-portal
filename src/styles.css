@@ -1,1 +1,146 @@
-/* You can add global styles to this file, and also import other style files */
+/* Modern global styles – Angular Material theme via custom-theme.scss */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Material components inherit theme */
+.mat-mdc-form-field,
+.mat-mdc-button,
+.mat-mdc-table,
+.mat-mdc-paginator,
+.mat-mdc-card {
+  font-family: inherit;
+}
+
+/* Refined focus for accessibility */
+:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+}
+
+/* Smooth scroll */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Dashboard sidenav – ensure all menu labels are visible */
+.dashboard-sidenav .mdc-list-item__content,
+.dashboard-sidenav .mat-mdc-list-item-title,
+.dashboard-sidenav .mdc-list-item__primary-text,
+.dashboard-sidenav .mat-mdc-list-item-unscoped-content {
+  color: var(--mat-sys-on-surface) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Dashboard sidenav – selected menu item (light blue) – global so it overrides Material */
+.dashboard-sidenav .mat-mdc-list-item.active,
+.dashboard-sidenav a[mat-list-item].active,
+.dashboard-sidenav a[mat-list-item].router-link-active {
+  background: #e3f2fd !important;
+  color: #1565c0 !important;
+  border: 1px solid #2196f3 !important;
+}
+/* Override Material state layer so our background shows */
+.dashboard-sidenav .mat-mdc-list-item.active::before,
+.dashboard-sidenav a[mat-list-item].active::before {
+  background: #e3f2fd !important;
+  opacity: 1 !important;
+}
+/* Keep icon and content above state layer so they are visible */
+.dashboard-sidenav .mat-mdc-list-item.active .mdc-list-item__start,
+.dashboard-sidenav .mat-mdc-list-item.active .mdc-list-item__content,
+.dashboard-sidenav a[mat-list-item].active .mdc-list-item__start,
+.dashboard-sidenav a[mat-list-item].active .mdc-list-item__content,
+.dashboard-sidenav a[mat-list-item].router-link-active .mdc-list-item__start,
+.dashboard-sidenav a[mat-list-item].router-link-active .mdc-list-item__content {
+  position: relative;
+  z-index: 1;
+}
+.dashboard-sidenav .mat-mdc-list-item.active .mat-icon,
+.dashboard-sidenav .mat-mdc-list-item.active .mat-mdc-list-item-icon,
+.dashboard-sidenav .mat-mdc-list-item.active .mdc-list-item__start .mat-icon,
+.dashboard-sidenav a[mat-list-item].active .mat-icon,
+.dashboard-sidenav a[mat-list-item].active .mat-mdc-list-item-icon,
+.dashboard-sidenav a[mat-list-item].active .mdc-list-item__start .mat-icon,
+.dashboard-sidenav a[mat-list-item].active [matListItemIcon],
+.dashboard-sidenav a[mat-list-item].router-link-active .mat-icon,
+.dashboard-sidenav a[mat-list-item].router-link-active .mat-mdc-list-item-icon,
+.dashboard-sidenav a[mat-list-item].router-link-active .mdc-list-item__start .mat-icon {
+  color: #1565c0 !important;
+  fill: #1565c0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.dashboard-sidenav .mat-mdc-list-item.active .mdc-list-item__primary-text,
+.dashboard-sidenav .mat-mdc-list-item.active .mdc-list-item__content,
+.dashboard-sidenav .mat-mdc-list-item.active .mat-mdc-list-item-title,
+.dashboard-sidenav .mat-mdc-list-item.active .mat-mdc-list-item-unscoped-content,
+.dashboard-sidenav .mat-mdc-list-item.active [matListItemTitle],
+.dashboard-sidenav a[mat-list-item].active .mdc-list-item__primary-text,
+.dashboard-sidenav a[mat-list-item].active .mdc-list-item__content,
+.dashboard-sidenav a[mat-list-item].active .mat-mdc-list-item-title,
+.dashboard-sidenav a[mat-list-item].active .mat-mdc-list-item-unscoped-content,
+.dashboard-sidenav a[mat-list-item].active [matListItemTitle],
+.dashboard-sidenav a[mat-list-item].router-link-active .mdc-list-item__primary-text,
+.dashboard-sidenav a[mat-list-item].router-link-active .mdc-list-item__content,
+.dashboard-sidenav a[mat-list-item].router-link-active .mat-mdc-list-item-title,
+.dashboard-sidenav a[mat-list-item].router-link-active .mat-mdc-list-item-unscoped-content,
+.dashboard-sidenav a[mat-list-item].router-link-active [matListItemTitle] {
+  color: #1565c0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Sub-menu: keep label above state layer and visible when active */
+.dashboard-sidenav .sub-menu a[mat-list-item].active .mdc-list-item__content,
+.dashboard-sidenav .sub-menu a[mat-list-item].active [matListItemTitle] {
+  position: relative;
+  z-index: 1;
+  color: #1565c0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Selected menu: force label and icon to show (all main menu items) */
+.dashboard-sidenav .sidenav-menu .mat-mdc-list-item.active .mat-mdc-list-item-title,
+.dashboard-sidenav .sidenav-menu a[mat-list-item].active .mat-mdc-list-item-title {
+  display: block !important;
+  color: #1565c0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.dashboard-sidenav .sidenav-menu .mat-mdc-list-item.active .mat-icon,
+.dashboard-sidenav .sidenav-menu .mat-mdc-list-item.active .mdc-list-item__start,
+.dashboard-sidenav .sidenav-menu a[mat-list-item].active .mat-icon,
+.dashboard-sidenav .sidenav-menu a[mat-list-item].active .mdc-list-item__start {
+  position: relative;
+  z-index: 1;
+  color: #1565c0 !important;
+  fill: #1565c0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Snackbar notifications – success and error */
+.snackbar-success.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  background: #2e7d32;
+}
+.snackbar-success .mat-mdc-snack-bar-label {
+  color: #fff;
+}
+.snackbar-error.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  background: #c62828;
+}
+.snackbar-error .mat-mdc-snack-bar-label {
+  color: #fff;
+}

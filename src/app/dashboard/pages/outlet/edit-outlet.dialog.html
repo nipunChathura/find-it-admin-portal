@@ -1,0 +1,213 @@
+<h2 mat-dialog-title>Edit Outlet</h2>
+<mat-dialog-content class="edit-outlet-dialog__content">
+  <section class="edit-outlet-dialog__section">
+    <h3 class="edit-outlet-dialog__section-title">Basic info</h3>
+    <p class="edit-outlet-dialog__readonly"><strong>Outlet ID:</strong> {{ data.outletId }}</p>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Search Merchant</mat-label>
+      <input
+        matInput
+        [(ngModel)]="merchantSearchText"
+        name="merchantSearch"
+        placeholder="Type to search..."
+        [matAutocomplete]="merchantAuto"
+        (ngModelChange)="onMerchantSearchChange($event)"
+      />
+      <mat-autocomplete
+        #merchantAuto="matAutocomplete"
+        (optionSelected)="onMerchantSelected($event.option.value)"
+      >
+        @for (m of merchantSearchResults$ | async; track m.merchantId) {
+          <mat-option [value]="m">{{ m.merchantName }}</mat-option>
+        }
+        @empty {
+          @if (merchantSearchText.trim()) {
+            <mat-option disabled>No merchants found</mat-option>
+          }
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Outlet Name</mat-label>
+      <input matInput [(ngModel)]="outletName" name="outletName" required />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Business Registration Number</mat-label>
+      <input matInput [(ngModel)]="businessRegistrationNumber" name="brn" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Tax Identification Number</mat-label>
+      <input matInput [(ngModel)]="taxIdentificationNumber" name="tin" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Contact Number</mat-label>
+      <input matInput [(ngModel)]="contactNumber" name="contactNumber" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" [(ngModel)]="emailAddress" name="emailAddress" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Outlet Type</mat-label>
+      <mat-select [(ngModel)]="outletType" name="outletType">
+        @for (opt of outletTypeOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Business Category</mat-label>
+      <mat-select [(ngModel)]="businessCategory" name="businessCategory">
+        @for (opt of businessCategoryOptions; track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </section>
+
+  <section class="edit-outlet-dialog__section">
+    <h3 class="edit-outlet-dialog__section-title">Address</h3>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Address Line 1</mat-label>
+      <input matInput [(ngModel)]="addressLine1" name="addressLine1" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Address Line 2</mat-label>
+      <input matInput [(ngModel)]="addressLine2" name="addressLine2" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Postal Code</mat-label>
+      <input matInput [(ngModel)]="postalCode" name="postalCode" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Province</mat-label>
+      <input
+        matInput
+        [(ngModel)]="provinceSearchText"
+        name="provinceSearch"
+        placeholder="Type to search..."
+        [matAutocomplete]="provinceAuto"
+        (ngModelChange)="onProvinceSearchChange($event)"
+        (focus)="onProvinceSearchChange(provinceSearchText)"
+      />
+      <mat-autocomplete
+        #provinceAuto="matAutocomplete"
+        (optionSelected)="onProvinceSelected($event.option.value)"
+      >
+        @for (p of provinceOptions$ | async; track p.id) {
+          <mat-option [value]="p">{{ p.name }}</mat-option>
+        }
+        @empty {
+          @if (provinceSearchText.trim()) {
+            <mat-option disabled>No provinces found</mat-option>
+          }
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>District</mat-label>
+      <input
+        matInput
+        [(ngModel)]="districtSearchText"
+        name="districtSearch"
+        placeholder="Type to search..."
+        [matAutocomplete]="districtAuto"
+        (ngModelChange)="onDistrictSearchChange($event)"
+        (focus)="onDistrictSearchChange(districtSearchText)"
+        [disabled]="districtDisabled"
+      />
+      <mat-autocomplete
+        #districtAuto="matAutocomplete"
+        (optionSelected)="onDistrictSelected($event.option.value)"
+      >
+        @for (d of districtOptions$ | async; track d.id) {
+          <mat-option [value]="d">{{ d.name }}</mat-option>
+        }
+        @empty {
+          @if (districtSearchText.trim() && !districtDisabled) {
+            <mat-option disabled>No districts found</mat-option>
+          }
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>City</mat-label>
+      <input
+        matInput
+        [(ngModel)]="citySearchText"
+        name="citySearch"
+        placeholder="Type to search..."
+        [matAutocomplete]="cityAuto"
+        (ngModelChange)="onCitySearchChange($event)"
+        (focus)="onCitySearchChange(citySearchText)"
+        [disabled]="cityDisabled"
+      />
+      <mat-autocomplete
+        #cityAuto="matAutocomplete"
+        (optionSelected)="onCitySelected($event.option.value)"
+      >
+        @for (c of cityOptions$ | async; track c.id) {
+          <mat-option [value]="c">{{ c.name }}</mat-option>
+        }
+        @empty {
+          @if (citySearchText.trim() && !cityDisabled) {
+            <mat-option disabled>No cities found</mat-option>
+          }
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+  </section>
+
+  <section class="edit-outlet-dialog__section">
+    <h3 class="edit-outlet-dialog__section-title">Bank details</h3>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Bank Name</mat-label>
+      <input matInput [(ngModel)]="bankName" name="bankName" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Bank Branch</mat-label>
+      <input matInput [(ngModel)]="bankBranch" name="bankBranch" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Account Number</mat-label>
+      <input matInput [(ngModel)]="accountNumber" name="accountNumber" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Account Holder Name</mat-label>
+      <input matInput [(ngModel)]="accountHolderName" name="accountHolderName" />
+    </mat-form-field>
+  </section>
+
+  <section class="edit-outlet-dialog__section">
+    <h3 class="edit-outlet-dialog__section-title">Location (coordinates)</h3>
+    @if (cityId != null) {
+      <app-map-pin-picker
+        [latitude]="latitude"
+        [longitude]="longitude"
+        (locationSelected)="onLocationSelected($event)"
+      />
+    } @else {
+      <p class="edit-outlet-dialog__map-hint">Select a city above to show the Sri Lankan map, then click on the map to set the outlet location.</p>
+    }
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Latitude</mat-label>
+      <input matInput type="number" [(ngModel)]="latitude" name="latitude" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Longitude</mat-label>
+      <input matInput type="number" [(ngModel)]="longitude" name="longitude" />
+    </mat-form-field>
+  </section>
+
+  <section class="edit-outlet-dialog__section">
+    <h3 class="edit-outlet-dialog__section-title">Other</h3>
+    <mat-form-field appearance="outline" class="edit-outlet-dialog__field">
+      <mat-label>Remarks</mat-label>
+      <textarea matInput [(ngModel)]="remarks" name="remarks" rows="2"></textarea>
+    </mat-form-field>
+  </section>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onUpdate()" type="button">Update</button>
+</mat-dialog-actions>

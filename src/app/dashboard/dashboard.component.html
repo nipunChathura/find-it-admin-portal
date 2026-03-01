@@ -1,0 +1,79 @@
+<mat-sidenav-container class="sidenav-container">
+  <!-- Side Navigation -->
+  <mat-sidenav #drawer mode="side" opened class="dashboard-sidenav">
+    <mat-toolbar color="primary" class="sidenav-toolbar">Menu</mat-toolbar>
+    <mat-nav-list class="sidenav-menu">
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+
+      <!-- User – main menu, goes to Manage User (View User) page -->
+      <a mat-list-item routerLink="/dashboard/users/view" routerLinkActive="active">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span matListItemTitle>User</span>
+      </a>
+
+      <a mat-list-item routerLink="/dashboard/items/view" routerLinkActive="active">
+        <mat-icon matListItemIcon>inventory_2</mat-icon>
+        <span matListItemTitle>Item</span>
+      </a>
+
+      <a mat-list-item routerLink="/dashboard/merchant" routerLinkActive="active">
+        <mat-icon matListItemIcon>store</mat-icon>
+        <span matListItemTitle>Merchant</span>
+      </a>
+
+      <a mat-list-item routerLink="/dashboard/category" routerLinkActive="active">
+        <mat-icon matListItemIcon>category</mat-icon>
+        <span matListItemTitle>Category</span>
+      </a>
+
+      <a mat-list-item routerLink="/dashboard/outlet" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon matListItemIcon>storefront</mat-icon>
+        <span matListItemTitle>Outlet</span>
+      </a>
+
+      <a mat-list-item routerLink="/dashboard/outlet/schedule" routerLinkActive="active">
+        <mat-icon matListItemIcon>schedule</mat-icon>
+        <span matListItemTitle>Outlet Schedule</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- Main Content Area -->
+  <mat-sidenav-content class="dashboard-content">
+    <!-- Top Header Bar -->
+    <mat-toolbar color="primary" class="dashboard-toolbar">
+      <button mat-icon-button (click)="drawer.toggle()" aria-label="Toggle menu" class="menu-button">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="toolbar-title">Find It Admin Portal</span>
+      <span class="toolbar-spacer"></span>
+      <span class="username">Hi, {{ username }}</span>
+      <button mat-icon-button aria-label="Messages">
+        <mat-icon>mail</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Notifications">
+        <mat-icon>notifications</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Account">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Logout" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <!-- Main Content -->
+    <div class="content">
+      <router-outlet />
+    </div>
+
+    <!-- Footer -->
+    <mat-toolbar color="primary" class="footer-bar">
+      <span>© 2025 Find It. All rights reserved.</span>
+    </mat-toolbar>
+  </mat-sidenav-content>
+</mat-sidenav-container>

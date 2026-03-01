@@ -1,0 +1,83 @@
+<div class="login-layout">
+  <section class="login-layout__image-section" aria-hidden="true">
+    <div class="login-layout__image" [style.background-image]="'url(' + loginBgImage + ')'"></div>
+    <div class="login-layout__overlay"></div>
+  </section>
+
+  <section class="login-layout__form-section">
+    <div class="login-layout__form-wrapper">
+      <mat-card class="login-card">
+        <mat-card-content>
+          <h1 class="login-card__title">Find It</h1>
+          <p class="login-card__subtitle">Admin Portal</p>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+            <mat-form-field appearance="outline" class="login-form__field">
+              <mat-label>Username</mat-label>
+              <input
+                matInput
+                type="text"
+                formControlName="username"
+                placeholder="Enter your username"
+                autocomplete="username"
+              />
+              @if (username?.hasError('required') && username?.touched) {
+                <mat-error>Username is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="login-form__field">
+              <mat-label>Password</mat-label>
+              <input
+                matInput
+                [type]="hidePassword ? 'password' : 'text'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hidePassword = !hidePassword"
+                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+              >
+                <mat-icon>{{ hidePassword ? 'visibility' : 'visibility_off' }}</mat-icon>
+              </button>
+              @if (password?.hasError('required') && password?.touched) {
+                <mat-error>Password is required</mat-error>
+              }
+              @if (password?.hasError('minlength') && password?.touched) {
+                <mat-error>Password must be at least 6 characters</mat-error>
+              }
+            </mat-form-field>
+
+            <div class="login-form__remember">
+              <mat-checkbox formControlName="rememberMe">Remember Me</mat-checkbox>
+            </div>
+
+            @if (errorMessage) {
+              <p class="login-form__error">{{ errorMessage }}</p>
+            }
+
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              class="login-form__submit"
+              [disabled]="loginForm.invalid || loading"
+            >
+              @if (loading) {
+                <mat-spinner diameter="24"></mat-spinner>
+              } @else {
+                Login
+              }
+            </button>
+
+            <a routerLink="/forgot-password" class="login-form__forgot">Forgot Password?</a>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+</div>

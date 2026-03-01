@@ -1,0 +1,95 @@
+<div class="view-items">
+  <div class="view-items__header">
+    <h1 class="view-items__title">Manage Item</h1>
+    <button mat-raised-button color="primary" (click)="onAddItem()" type="button" class="view-items__add-btn">
+      <mat-icon>add</mat-icon>
+      Add Item
+    </button>
+  </div>
+
+  <mat-card class="view-items__card">
+    <div class="view-items__filters">
+      <mat-form-field appearance="outline" class="view-items__status">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="statusFilter" name="status">
+          @for (opt of statusOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="view-items__search">
+        <mat-label>Search</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchText"
+          name="search"
+          placeholder="Search..."
+          (keydown.enter)="onSearch()"
+        />
+      </mat-form-field>
+      <div class="view-items__actions">
+        <button mat-raised-button color="primary" (click)="onSearch()" type="button">
+          <mat-icon>search</mat-icon>
+          Search
+        </button>
+        <button mat-raised-button (click)="onClear()" type="button" class="view-items__clear-btn">
+          <mat-icon>refresh</mat-icon>
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <div class="view-items__table-wrap">
+      <table mat-table [dataSource]="dataSource" matSort class="view-items__table">
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+          <td mat-cell *matCellDef="let row">{{ row.id }}</td>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+          <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+          <td mat-cell *matCellDef="let row">{{ row.description || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="view-items__status-badge" [class]="'view-items__status-badge view-items__status-badge--' + getStatusClass(row.status)">
+              {{ row.status }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="createdDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Created Date</th>
+          <td mat-cell *matCellDef="let row">{{ row.createdDate }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let row" class="view-items__actions-cell">
+            <button mat-icon-button matTooltip="Edit" (click)="onEdit(row)" type="button" aria-label="Edit item" class="view-items__action-btn view-items__action-btn--edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Delete" (click)="onDelete(row)" type="button" aria-label="Delete item" class="view-items__action-btn view-items__action-btn--delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <tr class="view-items__no-data" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">No items found.</td>
+        </tr>
+      </table>
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        [pageSize]="10"
+        showFirstLastButtons
+        aria-label="Paginate items"
+      ></mat-paginator>
+    </div>
+  </mat-card>
+</div>

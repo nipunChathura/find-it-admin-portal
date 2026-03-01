@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>Add Item</h2>
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="add-item-dialog__field">
+    <mat-label>Name</mat-label>
+    <input matInput [(ngModel)]="name" name="name" required />
+  </mat-form-field>
+  <mat-form-field appearance="outline" class="add-item-dialog__field">
+    <mat-label>Description</mat-label>
+    <textarea matInput [(ngModel)]="description" name="description" rows="3"></textarea>
+  </mat-form-field>
+  <mat-form-field appearance="outline" class="add-item-dialog__field">
+    <mat-label>Status</mat-label>
+    <mat-select [(ngModel)]="status" name="status">
+      @for (opt of statusOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()" type="button">Save</button>
+</mat-dialog-actions>

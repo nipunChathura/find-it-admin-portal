@@ -1,0 +1,229 @@
+.outlet-page {
+  padding: 0;
+}
+
+.outlet-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.outlet-page__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--mat-sys-primary);
+}
+
+.outlet-page__add-btn {
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  mat-icon {
+    margin-right: 0.25rem;
+    vertical-align: middle;
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.outlet-page__card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.outlet-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.outlet-page__status,
+.outlet-page__type {
+  width: 160px;
+  min-width: 140px;
+}
+
+.outlet-page__search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.outlet-page__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+
+  button {
+    border: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.outlet-page__actions button mat-icon {
+  margin-right: 0.25rem;
+  vertical-align: middle;
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.outlet-page__clear-btn {
+  color: #c62828;
+
+  .mat-icon {
+    color: #c62828;
+  }
+}
+
+.outlet-page__table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.outlet-page__table {
+  width: 100%;
+}
+
+.outlet-page__status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: var(--mat-sys-surface-container-highest);
+  color: var(--mat-sys-on-surface);
+
+  &.outlet-page__status-badge--active {
+    background: #e8f5e9;
+    color: #1b5e20;
+  }
+  &.outlet-page__status-badge--inactive {
+    background: #eceff1;
+    color: #455a64;
+  }
+  &.outlet-page__status-badge--pending {
+    background: #fff8e1;
+    color: #f57f17;
+  }
+  &.outlet-page__status-badge--default {
+    background: var(--mat-sys-surface-container-highest);
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.outlet-page__actions-cell {
+  white-space: nowrap;
+  padding-inline: 0.5rem;
+
+  button {
+    margin-inline: 0.125rem;
+  }
+}
+
+.outlet-page__action-btn {
+  .mat-icon {
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &:hover .mat-icon,
+  &:focus-visible .mat-icon {
+    color: var(--mat-sys-primary);
+  }
+
+  &.outlet-page__action-btn--edit .mat-icon {
+    color: #1565c0;
+  }
+  &.outlet-page__action-btn--edit:hover .mat-icon,
+  &.outlet-page__action-btn--edit:focus-visible .mat-icon {
+    color: #0d47a1;
+  }
+
+  &.outlet-page__action-btn--delete .mat-icon {
+    color: #c62828;
+  }
+  &.outlet-page__action-btn--delete:hover .mat-icon,
+  &.outlet-page__action-btn--delete:focus-visible .mat-icon {
+    color: #b71c1c;
+  }
+}
+
+.outlet-page__row {
+  cursor: pointer;
+}
+
+.outlet-page__detail-row {
+  height: 0;
+}
+
+.outlet-page__detail-cell {
+  padding: 0 !important;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  vertical-align: top;
+}
+
+.outlet-page__detail {
+  padding: 1rem 1.5rem 1rem 3rem;
+  background: var(--mat-sys-surface-container-lowest, #f5f5f5);
+}
+
+.outlet-page__detail-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.outlet-page__detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem 1.5rem;
+}
+
+.outlet-page__detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  font-size: 0.8125rem;
+}
+
+.outlet-page__detail-label {
+  font-weight: 500;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.outlet-page__no-data {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+mat-paginator {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+@media (max-width: 600px) {
+  .outlet-page__filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .outlet-page__status,
+  .outlet-page__type {
+    width: 100%;
+  }
+
+  .outlet-page__search {
+    max-width: none;
+  }
+
+  .outlet-page__actions {
+    justify-content: flex-end;
+  }
+}

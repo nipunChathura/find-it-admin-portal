@@ -1,0 +1,149 @@
+<div class="outlet-page">
+  <div class="outlet-page__header">
+    <h1 class="outlet-page__title">Manage Outlet</h1>
+    <button mat-raised-button color="primary" (click)="onAddOutlet()" type="button" class="outlet-page__add-btn">
+      <mat-icon>add_location</mat-icon>
+      Add Outlet
+    </button>
+  </div>
+
+  <mat-card class="outlet-page__card">
+    <div class="outlet-page__filters">
+      <mat-form-field appearance="outline" class="outlet-page__status">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="statusFilter" name="status">
+          @for (opt of statusOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="outlet-page__type">
+        <mat-label>Outlet Type</mat-label>
+        <mat-select [(ngModel)]="outletTypeFilter" name="outletType">
+          @for (opt of outletTypeOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="outlet-page__search">
+        <mat-label>Search</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchText"
+          name="search"
+          placeholder="Search name, address, merchant..."
+          (keydown.enter)="onSearch()"
+        />
+      </mat-form-field>
+      <div class="outlet-page__actions">
+        <button mat-raised-button color="primary" (click)="onSearch()" type="button">
+          <mat-icon>search</mat-icon>
+          Search
+        </button>
+        <button mat-raised-button (click)="onClear()" type="button" class="outlet-page__clear-btn">
+          <mat-icon>refresh</mat-icon>
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <div class="outlet-page__table-wrap">
+      <table mat-table [dataSource]="dataSource" matSort class="outlet-page__table" multiTemplateDataRows>
+        <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef style="width: 48px;"></th>
+          <td mat-cell *matCellDef="let item" style="width: 48px;">
+            <button mat-icon-button (click)="toggleExpand(item); $event.stopPropagation()" type="button" aria-label="Expand row">
+              <mat-icon>{{ isExpanded(item) ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let item" class="outlet-page__actions-cell" (click)="$event.stopPropagation()">
+            <button mat-icon-button matTooltip="Edit" (click)="onEdit(item)" type="button" aria-label="Edit outlet" class="outlet-page__action-btn outlet-page__action-btn--edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Delete" (click)="onDelete(item)" type="button" aria-label="Delete outlet" class="outlet-page__action-btn outlet-page__action-btn--delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="outletId">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+          <td mat-cell *matCellDef="let item">{{ item.row.outletId }}</td>
+        </ng-container>
+        <ng-container matColumnDef="outletName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Outlet Name</th>
+          <td mat-cell *matCellDef="let item">{{ item.row.outletName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="outletAddress">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Address</th>
+          <td mat-cell *matCellDef="let item">{{ item.row.outletAddress }}</td>
+        </ng-container>
+        <ng-container matColumnDef="outletPhone">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Phone</th>
+          <td mat-cell *matCellDef="let item">{{ item.row.outletPhone }}</td>
+        </ng-container>
+        <ng-container matColumnDef="outletType">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Outlet Type</th>
+          <td mat-cell *matCellDef="let item">{{ item.row.outletType || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="merchantName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Merchant</th>
+          <td mat-cell *matCellDef="let item">{{ item.row.merchantName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell *matCellDef="let item">
+            <span class="outlet-page__status-badge" [class]="'outlet-page__status-badge outlet-page__status-badge--' + getStatusClass(item.row.status)">
+              {{ item.row.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let item" [attr.colspan]="displayedColumns.length" class="outlet-page__detail-cell">
+            <div class="outlet-page__detail" *ngIf="isExpanded(item)">
+              <h4 class="outlet-page__detail-title">Full outlet data</h4>
+              <div class="outlet-page__detail-grid">
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Account holder</span><span>{{ item.raw.accountHolderName || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Account number</span><span>{{ item.raw.accountNumber || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Address line 1</span><span>{{ item.raw.addressLine1 || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Address line 2</span><span>{{ item.raw.addressLine2 || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Bank name</span><span>{{ item.raw.bankName || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Bank branch</span><span>{{ item.raw.bankBranch || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Business category</span><span>{{ item.raw.businessCategory || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Business reg. number</span><span>{{ item.raw.businessRegistrationNumber || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">City name</span><span>{{ item.raw.cityName || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">District name</span><span>{{ item.raw.districtName || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Province name</span><span>{{ item.raw.provinceName || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Postal code</span><span>{{ item.raw.postalCode || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Email</span><span>{{ item.raw.emailAddress || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Contact number</span><span>{{ item.raw.contactNumber || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Latitude</span><span>{{ item.raw.latitude ?? '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Longitude</span><span>{{ item.raw.longitude ?? '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Remarks</span><span>{{ item.raw.remarks || '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Subscription valid until</span><span>{{ item.raw.subscriptionValidUntil ? (item.raw.subscriptionValidUntil | date:'short') : '—' }}</span></div>
+                <div class="outlet-page__detail-item"><span class="outlet-page__detail-label">Tax ID number</span><span>{{ item.raw.taxIdentificationNumber || '—' }}</span></div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let item; columns: displayedColumns" class="outlet-page__row" (click)="toggleExpand(item)"></tr>
+        <tr mat-row *matRowDef="let item; columns: ['expandedDetail']" class="outlet-page__detail-row" [style.display]="isExpanded(item) ? '' : 'none'"></tr>
+
+        <tr class="outlet-page__no-data" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">No outlets found.</td>
+        </tr>
+      </table>
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        [pageSize]="10"
+        showFirstLastButtons
+        aria-label="Paginate outlets"
+      ></mat-paginator>
+    </div>
+  </mat-card>
+</div>
