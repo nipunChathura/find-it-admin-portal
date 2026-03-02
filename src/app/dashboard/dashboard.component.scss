@@ -44,6 +44,49 @@
     color: var(--mat-sys-on-surface);
   }
 
+  .sidenav-expansion {
+    margin-bottom: 0.5rem;
+    border-radius: 0;
+    border: 1px solid var(--mat-sys-outline-variant);
+    box-shadow: none;
+    background: var(--mat-sys-surface-container-low);
+
+    .mat-expansion-panel-header {
+      padding: 0 1rem;
+      height: 48px;
+    }
+
+    .mat-expansion-panel-body {
+      padding: 0 0.5rem 0.5rem;
+    }
+
+    .sidenav-sub-menu-box {
+      padding: 0;
+    }
+
+    .sidenav-expansion__icon {
+      margin-right: 0.5rem;
+      color: var(--mat-sys-on-surface);
+    }
+  }
+
+  .sidenav-sub-item {
+    padding-left: 1rem !important;
+    font-size: 0.9375rem;
+    min-height: 40px;
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: 4px;
+    margin-bottom: 0.25rem;
+    background: var(--mat-sys-surface-container);
+    box-sizing: border-box;
+  }
+
+  .sidenav-expansion .sidenav-sub-item.active {
+    background: #e3f2fd !important;
+    color: #1565c0 !important;
+    border-color: #2196f3 !important;
+  }
+
   .menu-toggle {
     cursor: pointer;
 

@@ -1,0 +1,261 @@
+<div class="help-page">
+  <header class="help-page-header">
+    <mat-icon class="help-page-icon">help_outline</mat-icon>
+    <h1 class="help-page-title">Help</h1>
+    <p class="help-page-subtitle">How the Find It Admin Portal works</p>
+  </header>
+
+  <mat-card class="help-overview">
+    <h2>Overview</h2>
+    <p>
+      The <strong>Find It Admin Portal</strong> is the central place to manage your platform: admin users, customers,
+      products (items), merchants, categories, outlets, and payments. You must be logged in to use any section.
+    </p>
+    <p>
+      <strong>Sidebar (left):</strong> Use the menu on the left to open each section. Some items (e.g. Item, Outlet)
+      expand to show sub-pages. The current page is highlighted.
+    </p>
+    <p>
+      <strong>Top toolbar:</strong> The bar at the top includes the app title, your username, Messages, Notifications (bell),
+      Account (profile), and Logout. Use the menu icon to collapse or expand the sidebar.
+    </p>
+  </mat-card>
+
+  <mat-accordion class="help-accordion">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        The Dashboard is the main container. When you click <strong>Dashboard</strong> in the sidebar (or open the
+        portal), you are taken to the default start page, which is <strong>Manage User</strong>.
+      </p>
+      <h3>What you can do</h3>
+      <ul>
+        <li>Use the sidebar to switch between User, Customer, Item, Merchant, Category, Payment, Notifications, Outlet, and Help.</li>
+        <li>The main content area (centre) shows the page for the menu item you selected.</li>
+      </ul>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>people</mat-icon>
+          <span>User</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        <strong>Manage User</strong> lets you view and manage <strong>admin users</strong> who can log in to this portal.
+        You can add new admins, edit their details, change status, approve pending users, or remove users.
+      </p>
+      <h3>Page layout</h3>
+      <ul>
+        <li><strong>Top:</strong> Page title “Manage User” and an <strong>Add User</strong> button.</li>
+        <li><strong>Filters:</strong> A <strong>Status</strong> dropdown (All, ACTIVE, INACTIVE, PENDING, APPROVED, FORGOT_PASSWORD_PENDING) and a <strong>Search</strong> box. Click <strong>Search</strong> to apply; <strong>Clear</strong> resets filters and reloads the list.</li>
+        <li><strong>Table:</strong> Columns show ID, Username, Email, Status, Created Date, and <strong>Actions</strong> (Edit, Delete, and for system admins, Approve). You can sort by clicking column headers and change page size with the paginator at the bottom.</li>
+      </ul>
+      <h3>How to add a user</h3>
+      <ol>
+        <li>Click <strong>Add User</strong>.</li>
+        <li>In the dialog, enter <strong>Name</strong>, <strong>Username</strong>, <strong>Email</strong>, <strong>Password</strong>, and optionally <strong>Status</strong> (if your role allows).</li>
+        <li>Click <strong>Save</strong>. The new user appears in the table and can log in with the username and password you set.</li>
+      </ol>
+      <h3>How to edit a user</h3>
+      <ol>
+        <li>Find the user in the table and click the <strong>Edit</strong> (pencil) icon in the Actions column.</li>
+        <li>Update Username, Email, or Status in the dialog. Only users with the right role can change status.</li>
+        <li>Click <strong>Update</strong> to save.</li>
+      </ol>
+      <h3>Other actions</h3>
+      <ul>
+        <li><strong>Delete:</strong> Click the delete (trash) icon, confirm in the dialog. The user’s status is set to deleted; they can no longer log in.</li>
+        <li><strong>Approve:</strong> If you are a <strong>System Admin</strong>, you will see an Approve (check) icon for users with status <strong>PENDING</strong>. Click it to approve them. System Admin users themselves cannot be edited or deleted from this screen.</li>
+      </ul>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>person</mat-icon>
+          <span>Customer</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        <strong>Manage Customer</strong> shows all <strong>customers</strong> (end users of the Find It platform).
+        Customers are loaded from the API and can be filtered, searched, edited, or deleted.
+      </p>
+      <h3>Page layout</h3>
+      <ul>
+        <li><strong>Filters:</strong> <strong>Status</strong> (All, ACTIVE, INACTIVE, PENDING), <strong>Membership</strong> (All, SILVER, GOLD, PLATINUM), and <strong>Search</strong>. Click <strong>Search</strong> to apply; <strong>Clear</strong> resets and reloads.</li>
+        <li><strong>Table:</strong> Columns are ID, Name, Email, Phone, Membership, Status, and <strong>Actions</strong> (Edit, Delete). Sort by column header; use the paginator for page size and navigation.</li>
+      </ul>
+      <h3>How to edit a customer</h3>
+      <ol>
+        <li>Click the <strong>Edit</strong> (pencil) icon on the row.</li>
+        <li>In the dialog, update <strong>First name</strong>, <strong>Last name</strong>, <strong>Email</strong>, <strong>Phone number</strong>, <strong>NIC</strong>, <strong>Date of birth</strong>, <strong>Gender</strong>, <strong>Country</strong>, <strong>Membership</strong>, or <strong>Status</strong>.</li>
+        <li>Click <strong>Update</strong>. Changes are sent to the backend.</li>
+      </ol>
+      <h3>How to delete a customer</h3>
+      <p>Click the <strong>Delete</strong> (trash) icon, then confirm in the dialog. The customer is removed from the list (backend delete).</p>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>inventory_2</mat-icon>
+          <span>Item</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        The <strong>Item</strong> menu has two sub-pages: <strong>Item</strong> (product/service catalogue) and
+        <strong>Item Discount</strong> (discounts applied to items).
+      </p>
+      <h3>Item (catalogue)</h3>
+      <ul>
+        <li>View all items in a table. Use <strong>Search</strong> and <strong>Status</strong> / <strong>Availability</strong> filters to find items.</li>
+        <li><strong>Add</strong> new items, <strong>Edit</strong> (pencil) or <strong>Delete</strong> (trash) from the Actions column. Sort and paginate as needed.</li>
+        <li>Items are typically linked to categories and merchants and can be used in offers and discounts.</li>
+      </ul>
+      <h3>Item Discount</h3>
+      <ul>
+        <li>Manage discounts that apply to specific items. Filter by <strong>Status</strong> and <strong>Item</strong>.</li>
+        <li>Use <strong>Add</strong> to create a discount (e.g. name, type, value, item, validity). <strong>Edit</strong> or <strong>Delete</strong> from the Actions column.</li>
+      </ul>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>store</mat-icon>
+          <span>Merchant</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        <strong>Merchant</strong> is for managing <strong>merchants</strong> (businesses) that use the Find It platform.
+        Merchants usually have one or more outlets and sell items. This page lists all merchants and lets you add, edit, or delete them.
+      </p>
+      <h3>What you can do</h3>
+      <ul>
+        <li>View the merchant list (often with search and filters).</li>
+        <li><strong>Add Merchant:</strong> Create a new merchant (name, contact details, etc. as per the form).</li>
+        <li><strong>Edit:</strong> Change merchant details from the Actions column.</li>
+        <li><strong>Delete:</strong> Remove a merchant (confirm in the dialog). Deleting a merchant may affect linked outlets and items, depending on backend rules.</li>
+      </ul>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>category</mat-icon>
+          <span>Category</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        <strong>Category</strong> lets you manage <strong>categories</strong> used to group items (e.g. Food, Electronics).
+        Categories help customers and admins find and filter items.
+      </p>
+      <h3>What you can do</h3>
+      <ul>
+        <li>View all categories in a table (with search/filters if available).</li>
+        <li><strong>Add Category:</strong> Create a new category (e.g. name, description).</li>
+        <li><strong>Edit:</strong> Update a category’s name or other fields.</li>
+        <li><strong>Delete:</strong> Remove a category. Ensure no items depend on it, or reassign them first, to avoid errors.</li>
+      </ul>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>payment</mat-icon>
+          <span>Payment</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        <strong>Payment</strong> is for managing <strong>payment methods or payment configurations</strong> linked to
+        <strong>outlets</strong>. You can open it from the main menu (<strong>Payment</strong>) or from under
+        <strong>Outlet → Payment</strong>.
+      </p>
+      <h3>What you can do</h3>
+      <ul>
+        <li>View payments in a table, often filterable by <strong>Outlet</strong> and <strong>Status</strong>.</li>
+        <li><strong>Add:</strong> Create a new payment method/configuration for an outlet (e.g. type, account details, status).</li>
+        <li><strong>Edit:</strong> Change payment details or status from the Actions column.</li>
+        <li><strong>Delete:</strong> Remove a payment configuration after confirming in the dialog.</li>
+      </ul>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>notifications</mat-icon>
+          <span>Notifications</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        <strong>Notifications</strong> keep you updated on events (e.g. new signups, system alerts). You can see them
+        in a <strong>dropdown</strong> from the bell icon in the toolbar, or on the full <strong>Notifications</strong> page.
+      </p>
+      <h3>Bell icon (toolbar)</h3>
+      <ul>
+        <li>Click the <strong>bell</strong> in the top toolbar to open a dropdown panel.</li>
+        <li>A <strong>red badge</strong> on the bell shows the number of <strong>unread</strong> notifications (hidden when zero).</li>
+        <li>In the dropdown you see: notification <strong>title</strong>, short <strong>message</strong>, <strong>time</strong> (e.g. “5m ago”), and type (info, success, warning, error). Unread items are highlighted.</li>
+        <li>Use the <strong>checkmark</strong> on a row to mark that notification as read, or click <strong>Mark all as read</strong> at the top.</li>
+        <li>Click <strong>View All</strong> to open the full Notifications page. The list is refreshed automatically every 10 seconds.</li>
+      </ul>
+      <h3>Notifications page (View All)</h3>
+      <ul>
+        <li>Open from the bell dropdown (<strong>View All</strong>) or from the sidebar (<strong>Notifications</strong>).</li>
+        <li>Shows all notifications in a list. You can <strong>Mark all as read</strong> or mark individual items as read. Same data as the dropdown, in a full-page view.</li>
+      </ul>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>storefront</mat-icon>
+          <span>Outlet</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h3>What it is</h3>
+      <p>
+        <strong>Outlet</strong> represents a physical or logical <strong>location</strong> (e.g. a store branch).
+        Under the Outlet menu there are three sub-pages: <strong>Outlet</strong>, <strong>Outlet Schedule</strong>, and <strong>Payment</strong>.
+      </p>
+      <h3>Outlet (list)</h3>
+      <ul>
+        <li>View all outlets. Add new outlets, edit (name, address, merchant, etc.), or delete. Use search and filters to find specific outlets.</li>
+      </ul>
+      <h3>Outlet Schedule</h3>
+      <ul>
+        <li>Configure <strong>opening hours and schedules</strong> for each outlet (e.g. Mon–Fri 9–5, Sat 10–2). Add, edit, or remove schedule entries so customers see when outlets are open.</li>
+      </ul>
+      <h3>Payment</h3>
+      <ul>
+        <li>Same as the main <strong>Payment</strong> menu: manage payment methods/configurations for outlets.</li>
+      </ul>
+    </mat-expansion-panel>
+  </mat-accordion>
+
+  <mat-card class="help-tips">
+    <h2>Tips</h2>
+    <ul>
+      <li><strong>Sidebar:</strong> Use the <strong>menu icon</strong> (top-left of the toolbar) to collapse or expand the sidebar and get more space for the content.</li>
+      <li><strong>Finding data:</strong> On list pages (User, Customer, Item, etc.), use <strong>Search</strong> and <strong>filters</strong> (Status, dropdowns) then click <strong>Search</strong> or press Enter. Use <strong>Clear</strong> to reset.</li>
+      <li><strong>Sorting and paging:</strong> Click column headers to sort. Use the paginator at the bottom to change page size (e.g. 5, 10, 25, 50) and move between pages.</li>
+      <li><strong>Account:</strong> Click your <strong>Account</strong> (profile) icon in the toolbar to open your profile and update your details or profile image.</li>
+      <li><strong>Logout:</strong> Always use <strong>Logout</strong> when you finish your session to keep your account secure.</li>
+    </ul>
+  </mat-card>
+</div>

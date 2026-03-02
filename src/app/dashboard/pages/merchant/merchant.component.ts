@@ -20,6 +20,7 @@ import { AddMerchantDialogComponent, AddMerchantDialogResult } from './add-merch
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
+  { value: 'PENDING', label: 'PENDING' },
   { value: 'ACTIVE', label: 'ACTIVE' },
   { value: 'INACTIVE', label: 'INACTIVE' },
 ];
@@ -158,10 +159,37 @@ export class MerchantComponent implements AfterViewInit {
     });
   }
 
+  onApprove(row: MerchantRow): void {
+    this.merchantsApi.approveMerchant(row.merchantId).subscribe({
+      next: () => {
+        this.showSuccess('Merchant approved successfully.');
+        const index = this.allData.findIndex((m) => m.merchantId === row.merchantId);
+        if (index !== -1) {
+          this.allData[index] = { ...row, merchantStatus: 'ACTIVE' };
+          this.dataSource.data = [...this.allData];
+        } else {
+          this.loadMerchants();
+        }
+      },
+      error: () => {
+        this.showError('Failed to approve merchant.');
+        this.loadMerchants();
+      },
+    });
+  }
+
+  /** Show Approve button only for main merchants (no parent) with PENDING status. */
+  canShowApprove(row: MerchantRow): boolean {
+    const isPending = (row.merchantStatus ?? '').toUpperCase() === 'PENDING';
+    const isMainMerchant = !(row.parentMerchantName ?? '').trim();
+    return isPending && isMainMerchant;
+  }
+
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
       ACTIVE: 'active',
       INACTIVE: 'inactive',
+      PENDING: 'pending',
     };
     return map[status] ?? 'default';
   }

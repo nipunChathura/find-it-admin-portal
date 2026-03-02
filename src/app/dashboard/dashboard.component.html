@@ -15,10 +15,29 @@
         <span matListItemTitle>User</span>
       </a>
 
-      <a mat-list-item routerLink="/dashboard/items/view" routerLinkActive="active">
-        <mat-icon matListItemIcon>inventory_2</mat-icon>
-        <span matListItemTitle>Item</span>
+      <!-- Customer – main menu, goes to Manage Customer page -->
+      <a mat-list-item routerLink="/dashboard/customers/view" routerLinkActive="active">
+        <mat-icon matListItemIcon>person</mat-icon>
+        <span matListItemTitle>Customer</span>
       </a>
+
+      <!-- Item sub-menu -->
+      <mat-expansion-panel class="sidenav-expansion">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon matListItemIcon class="sidenav-expansion__icon">inventory_2</mat-icon>
+            <span>Item</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-nav-list class="sidenav-sub-menu-box">
+          <a mat-list-item routerLink="/dashboard/items/view" routerLinkActive="active" class="sidenav-sub-item">
+            <span matListItemTitle>Item</span>
+          </a>
+          <a mat-list-item routerLink="/dashboard/items/discount" routerLinkActive="active" class="sidenav-sub-item">
+            <span matListItemTitle>Item Discount</span>
+          </a>
+        </mat-nav-list>
+      </mat-expansion-panel>
 
       <a mat-list-item routerLink="/dashboard/merchant" routerLinkActive="active">
         <mat-icon matListItemIcon>store</mat-icon>
@@ -30,15 +49,42 @@
         <span matListItemTitle>Category</span>
       </a>
 
-      <a mat-list-item routerLink="/dashboard/outlet" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <mat-icon matListItemIcon>storefront</mat-icon>
-        <span matListItemTitle>Outlet</span>
+      <!-- Payment – main menu, goes to Manage Payment page -->
+      <a mat-list-item routerLink="/dashboard/outlet/payment" routerLinkActive="active">
+        <mat-icon matListItemIcon>payment</mat-icon>
+        <span matListItemTitle>Payment</span>
       </a>
 
-      <a mat-list-item routerLink="/dashboard/outlet/schedule" routerLinkActive="active">
-        <mat-icon matListItemIcon>schedule</mat-icon>
-        <span matListItemTitle>Outlet Schedule</span>
+      <a mat-list-item routerLink="/dashboard/notifications" routerLinkActive="active">
+        <mat-icon matListItemIcon>notifications</mat-icon>
+        <span matListItemTitle>Notifications</span>
       </a>
+
+      <a mat-list-item routerLink="/dashboard/help" routerLinkActive="active">
+        <mat-icon matListItemIcon>help_outline</mat-icon>
+        <span matListItemTitle>Help</span>
+      </a>
+
+      <!-- Outlet sub-menu -->
+      <mat-expansion-panel class="sidenav-expansion">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon matListItemIcon class="sidenav-expansion__icon">storefront</mat-icon>
+            <span>Outlet</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-nav-list class="sidenav-sub-menu-box">
+          <a mat-list-item routerLink="/dashboard/outlet" routerLinkActive="active" class="sidenav-sub-item" [routerLinkActiveOptions]="{ exact: true }">
+            <span matListItemTitle>Outlet</span>
+          </a>
+          <a mat-list-item routerLink="/dashboard/outlet/schedule" routerLinkActive="active" class="sidenav-sub-item">
+            <span matListItemTitle>Outlet Schedule</span>
+          </a>
+          <a mat-list-item routerLink="/dashboard/outlet/payment" routerLinkActive="active" class="sidenav-sub-item">
+            <span matListItemTitle>Payment</span>
+          </a>
+        </mat-nav-list>
+      </mat-expansion-panel>
     </mat-nav-list>
   </mat-sidenav>
 
@@ -55,10 +101,8 @@
       <button mat-icon-button aria-label="Messages">
         <mat-icon>mail</mat-icon>
       </button>
-      <button mat-icon-button aria-label="Notifications">
-        <mat-icon>notifications</mat-icon>
-      </button>
-      <button mat-icon-button aria-label="Account">
+      <app-notification></app-notification>
+      <button mat-icon-button aria-label="Account" (click)="openProfilePopup()">
         <mat-icon>account_circle</mat-icon>
       </button>
       <button mat-icon-button aria-label="Logout" (click)="logout()">

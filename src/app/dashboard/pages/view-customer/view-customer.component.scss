@@ -1,8 +1,8 @@
-.view-merchants {
+.view-customers {
   padding: 0;
 }
 
-.view-merchants__header {
+.view-customers__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -11,14 +11,14 @@
   margin-bottom: 1rem;
 }
 
-.view-merchants__title {
+.view-customers__title {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--mat-sys-primary);
 }
 
-.view-merchants__add-btn {
+.view-customers__add-btn {
   border: 1px solid var(--mat-sys-outline-variant);
 
   mat-icon {
@@ -30,13 +30,13 @@
   }
 }
 
-.view-merchants__card {
+.view-customers__card {
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
-.view-merchants__filters {
+.view-customers__filters {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -44,19 +44,18 @@
   margin-bottom: 1.5rem;
 }
 
-.view-merchants__status,
-.view-merchants__type {
+.view-customers__status {
   width: 160px;
   min-width: 140px;
 }
 
-.view-merchants__search {
+.view-customers__search {
   flex: 1;
   min-width: 200px;
   max-width: 320px;
 }
 
-.view-merchants__actions {
+.view-customers__actions {
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
@@ -66,7 +65,7 @@
   }
 }
 
-.view-merchants__actions button mat-icon {
+.view-customers__actions button mat-icon {
   margin-right: 0.25rem;
   vertical-align: middle;
   font-size: 1.25rem;
@@ -74,7 +73,7 @@
   height: 1.25rem;
 }
 
-.view-merchants__clear-btn {
+.view-customers__clear-btn {
   color: #c62828;
 
   .mat-icon {
@@ -82,17 +81,17 @@
   }
 }
 
-.view-merchants__table-wrap {
+.view-customers__table-wrap {
   overflow-x: auto;
   border-radius: 12px;
   border: 1px solid var(--mat-sys-outline-variant);
 }
 
-.view-merchants__table {
+.view-customers__table {
   width: 100%;
 }
 
-.view-merchants__status-badge {
+.view-customers__status-badge {
   display: inline-block;
   padding: 0.25rem 0.6rem;
   border-radius: 6px;
@@ -101,25 +100,25 @@
   background: var(--mat-sys-surface-container-highest);
   color: var(--mat-sys-on-surface);
 
-  &.view-merchants__status-badge--active {
+  &.view-customers__status-badge--active {
     background: #e8f5e9;
     color: #1b5e20;
   }
-  &.view-merchants__status-badge--inactive {
+  &.view-customers__status-badge--inactive {
     background: #eceff1;
     color: #455a64;
   }
-  &.view-merchants__status-badge--pending {
+  &.view-customers__status-badge--pending {
     background: #fff8e1;
     color: #f57f17;
   }
-  &.view-merchants__status-badge--default {
+  &.view-customers__status-badge--default {
     background: var(--mat-sys-surface-container-highest);
     color: var(--mat-sys-on-surface);
   }
 }
 
-.view-merchants__actions-cell {
+.view-customers__actions-cell {
   white-space: nowrap;
   padding-inline: 0.5rem;
 
@@ -128,7 +127,7 @@
   }
 }
 
-.view-merchants__action-btn {
+.view-customers__action-btn {
   .mat-icon {
     color: var(--mat-sys-on-surface-variant);
   }
@@ -138,42 +137,24 @@
     color: var(--mat-sys-primary);
   }
 
-  &.view-merchants__action-btn--edit .mat-icon {
+  &.view-customers__action-btn--edit .mat-icon {
     color: #1565c0;
   }
-  &.view-merchants__action-btn--edit:hover .mat-icon,
-  &.view-merchants__action-btn--edit:focus-visible .mat-icon {
+  &.view-customers__action-btn--edit:hover .mat-icon,
+  &.view-customers__action-btn--edit:focus-visible .mat-icon {
     color: #0d47a1;
   }
 
-  &.view-merchants__action-btn--delete .mat-icon {
+  &.view-customers__action-btn--delete .mat-icon {
     color: #c62828;
   }
-  &.view-merchants__action-btn--delete:hover .mat-icon,
-  &.view-merchants__action-btn--delete:focus-visible .mat-icon {
+  &.view-customers__action-btn--delete:hover .mat-icon,
+  &.view-customers__action-btn--delete:focus-visible .mat-icon {
     color: #b71c1c;
-  }
-
-  &.view-merchants__action-btn--approve {
-    background: rgba(27, 94, 32, 0.12);
-    color: #1b5e20;
-
-    .mat-icon {
-      color: #1b5e20;
-    }
-  }
-  &.view-merchants__action-btn--approve:hover,
-  &.view-merchants__action-btn--approve:focus-visible {
-    background: rgba(27, 94, 32, 0.22);
-    color: #0d3d0d;
-
-    .mat-icon {
-      color: #0d3d0d;
-    }
   }
 }
 
-.view-merchants__no-data {
+.view-customers__no-data {
   text-align: center;
   color: var(--mat-sys-on-surface-variant);
 }
@@ -183,21 +164,20 @@ mat-paginator {
 }
 
 @media (max-width: 600px) {
-  .view-merchants__filters {
+  .view-customers__filters {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .view-merchants__status,
-  .view-merchants__type {
+  .view-customers__status {
     width: 100%;
   }
 
-  .view-merchants__search {
+  .view-customers__search {
     max-width: none;
   }
 
-  .view-merchants__actions {
+  .view-customers__actions {
     justify-content: flex-end;
   }
 }

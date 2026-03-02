@@ -1,15 +1,26 @@
 <h2 mat-dialog-title>Edit Item</h2>
 <mat-dialog-content>
   <p class="edit-item-dialog__readonly">
-    <strong>ID:</strong> {{ data.id }} &nbsp;|&nbsp; <strong>Created:</strong> {{ data.createdDate }}
+    <strong>ID:</strong> {{ data.id }} &nbsp;|&nbsp; <strong>Category:</strong> {{ data.categoryName }} &nbsp;|&nbsp; <strong>Outlet:</strong> {{ data.outletName }}
   </p>
   <mat-form-field appearance="outline" class="edit-item-dialog__field">
-    <mat-label>Name</mat-label>
+    <mat-label>Item Name</mat-label>
     <input matInput [(ngModel)]="name" name="name" />
   </mat-form-field>
   <mat-form-field appearance="outline" class="edit-item-dialog__field">
     <mat-label>Description</mat-label>
     <textarea matInput [(ngModel)]="description" name="description" rows="3"></textarea>
+  </mat-form-field>
+  <mat-form-field appearance="outline" class="edit-item-dialog__field">
+    <mat-label>Price</mat-label>
+    <input matInput type="number" step="0.01" [(ngModel)]="price" name="price" />
+  </mat-form-field>
+  <div class="edit-item-dialog__checkbox">
+    <mat-checkbox [(ngModel)]="availability" name="availability">Available</mat-checkbox>
+  </div>
+  <mat-form-field appearance="outline" class="edit-item-dialog__field">
+    <mat-label>Image URL (optional)</mat-label>
+    <input matInput [(ngModel)]="itemImage" name="itemImage" placeholder="null to clear" />
   </mat-form-field>
   <mat-form-field appearance="outline" class="edit-item-dialog__field">
     <mat-label>Status</mat-label>

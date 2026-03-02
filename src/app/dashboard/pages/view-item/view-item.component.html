@@ -9,6 +9,74 @@
 
   <mat-card class="view-items__card">
     <div class="view-items__filters">
+      <mat-form-field appearance="outline" class="view-items__search">
+        <mat-label>Search</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchText"
+          name="search"
+          placeholder="Search name, description..."
+          (keydown.enter)="onSearch()"
+        />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="view-items__category">
+        <mat-label>Category</mat-label>
+        <input
+          matInput
+          [(ngModel)]="categorySearchText"
+          name="categorySearch"
+          placeholder="Search category name..."
+          [matAutocomplete]="categoryAuto"
+          (ngModelChange)="onCategorySearchInput()"
+        />
+        @if (categoryIdFilter !== '') {
+          <button mat-icon-button matSuffix type="button" (click)="clearCategoryFilter()" aria-label="Clear category">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+        <mat-autocomplete
+          #categoryAuto="matAutocomplete"
+          (optionSelected)="onCategoryOptionSelected($event.option.value)"
+        >
+          @for (opt of categoryOptions; track opt.id) {
+            <mat-option [value]="opt">{{ opt.name }}</mat-option>
+          }
+          @empty {
+            @if (categorySearchText.trim()) {
+              <mat-option disabled>No categories found</mat-option>
+            }
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="view-items__outlet">
+        <mat-label>Outlet</mat-label>
+        <input
+          matInput
+          [(ngModel)]="outletSearchText"
+          name="outletSearch"
+          placeholder="Search outlet name..."
+          [matAutocomplete]="outletAuto"
+          (ngModelChange)="onOutletSearchInput()"
+        />
+        @if (outletIdFilter !== '') {
+          <button mat-icon-button matSuffix type="button" (click)="clearOutletFilter()" aria-label="Clear outlet">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+        <mat-autocomplete
+          #outletAuto="matAutocomplete"
+          (optionSelected)="onOutletOptionSelected($event.option.value)"
+        >
+          @for (opt of outletOptions; track opt.outletId) {
+            <mat-option [value]="opt">{{ opt.outletName }}</mat-option>
+          }
+          @empty {
+            @if (outletSearchText.trim()) {
+              <mat-option disabled>No outlets found</mat-option>
+            }
+          }
+        </mat-autocomplete>
+      </mat-form-field>
       <mat-form-field appearance="outline" class="view-items__status">
         <mat-label>Status</mat-label>
         <mat-select [(ngModel)]="statusFilter" name="status">
@@ -17,15 +85,13 @@
           }
         </mat-select>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="view-items__search">
-        <mat-label>Search</mat-label>
-        <input
-          matInput
-          [(ngModel)]="searchText"
-          name="search"
-          placeholder="Search..."
-          (keydown.enter)="onSearch()"
-        />
+      <mat-form-field appearance="outline" class="view-items__status">
+        <mat-label>Availability</mat-label>
+        <mat-select [(ngModel)]="availabilityFilter" name="availability">
+          @for (opt of availabilityOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
       </mat-form-field>
       <div class="view-items__actions">
         <button mat-raised-button color="primary" (click)="onSearch()" type="button">
@@ -53,6 +119,18 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
           <td mat-cell *matCellDef="let row">{{ row.description || '—' }}</td>
         </ng-container>
+        <ng-container matColumnDef="categoryName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Category</th>
+          <td mat-cell *matCellDef="let row">{{ row.categoryName || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="outletName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Outlet</th>
+          <td mat-cell *matCellDef="let row">{{ row.outletName || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Price</th>
+          <td mat-cell *matCellDef="let row">{{ row.price | number:'1.2-2' }}</td>
+        </ng-container>
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
           <td mat-cell *matCellDef="let row">
@@ -61,9 +139,13 @@
             </span>
           </td>
         </ng-container>
-        <ng-container matColumnDef="createdDate">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Created Date</th>
-          <td mat-cell *matCellDef="let row">{{ row.createdDate }}</td>
+        <ng-container matColumnDef="availability">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Availability</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="view-items__availability" [class.view-items__availability--yes]="row.availability" [class.view-items__availability--no]="!row.availability">
+              {{ row.availability ? 'Yes' : 'No' }}
+            </span>
+          </td>
         </ng-container>
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>

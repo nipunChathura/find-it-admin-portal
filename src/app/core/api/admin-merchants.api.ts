@@ -186,4 +186,21 @@ export class AdminMerchantsApiService {
     };
     return this.http.delete<void>(url, { headers });
   }
+
+  /**
+   * PUT approve merchant by id.
+   * Calls PUT .../admin/merchants/approval/{merchantId}
+   */
+  approveMerchant(merchantId: number): Observable<unknown> {
+    const token = this.auth.token();
+    if (!token) {
+      return of(null);
+    }
+    const url = `${ADMIN_MERCHANTS_URL}/approval/${merchantId}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    };
+    return this.http.put(url, {}, { headers });
+  }
 }

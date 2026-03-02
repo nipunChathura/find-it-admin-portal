@@ -1,0 +1,49 @@
+<div class="notifications-page">
+  <div class="notifications-page-header">
+    <h1 class="notifications-page-title">Notifications</h1>
+    @if (unreadCount() > 0) {
+      <button mat-raised-button color="primary" type="button" (click)="markAllAsRead()">
+        <mat-icon>done_all</mat-icon>
+        Mark all as read
+      </button>
+    }
+  </div>
+
+  <div class="notifications-page-list">
+    @if (list().length === 0) {
+      <mat-card class="notifications-page-empty">
+        <mat-icon>notifications_none</mat-icon>
+        <h2>No notifications</h2>
+        <p>When you have notifications, they will appear here.</p>
+      </mat-card>
+    } @else {
+      @for (n of list(); track n.id) {
+        <mat-card
+          class="notification-card"
+          [class.notification-card--unread]="!n.isRead"
+          [class]="'notification-card ' + getTypeColorClass(n.type)"
+        >
+          <div class="notification-card-icon">
+            <mat-icon [class]="'notification-card-icon--' + n.type">{{ getTypeIcon(n.type) }}</mat-icon>
+          </div>
+          <div class="notification-card-body">
+            <h3 class="notification-card-title">{{ n.title }}</h3>
+            <p class="notification-card-message">{{ n.message }}</p>
+            <span class="notification-card-time">{{ formatTime(n.createdAt) }}</span>
+          </div>
+          @if (!n.isRead) {
+            <button
+              mat-button
+              type="button"
+              class="notification-card-action"
+              (click)="markAsRead(n)"
+            >
+              <mat-icon>done</mat-icon>
+              Mark as read
+            </button>
+          }
+        </mat-card>
+      }
+    }
+  </div>
+</div>
