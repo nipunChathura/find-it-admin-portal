@@ -147,6 +147,14 @@
             </span>
           </td>
         </ng-container>
+        <ng-container matColumnDef="discountAvailability">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Discount Available</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="view-items__availability" [class.view-items__availability--yes]="row.discountAvailable" [class.view-items__availability--no]="!row.discountAvailable">
+              {{ row.discountAvailable ? 'Yes' : 'No' }}
+            </span>
+          </td>
+        </ng-container>
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let row" class="view-items__actions-cell">

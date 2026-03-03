@@ -5,7 +5,7 @@ import { AuthService } from '../auth/auth.service';
 import { Notification, NotificationApiItem } from './notification.model';
 
 const NOTIFICATIONS_URL = 'http://localhost:9090/find-it/api/notifications';
-const POLL_INTERVAL_MS = 10_000;
+const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 function mapApiItemToNotification(item: NotificationApiItem): Notification {
   const id = String(item.id ?? '');
@@ -51,16 +51,18 @@ export class NotificationService implements OnDestroy {
     this.stopPolling();
   }
 
-  /** Fetch notifications from REST API. */
+  /** Fetch notifications from REST API: GET .../notifications/unread/{userId} */
   fetchNotifications(): Observable<Notification[]> {
     const token = this.auth.token();
-    if (!token) {
+    const userId = this.auth.user()?.userId;
+    if (!token || userId == null) {
       return of([]);
     }
+    const url = `${NOTIFICATIONS_URL}/unread/${userId}`;
     const headers = { Authorization: `Bearer ${token}` };
     return this.http
       .get<NotificationApiItem[] | { content?: NotificationApiItem[]; data?: NotificationApiItem[] }>(
-        NOTIFICATIONS_URL,
+        url,
         { headers }
       )
       .pipe(

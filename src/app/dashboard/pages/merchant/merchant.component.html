@@ -57,6 +57,11 @@
                 <mat-icon>how_to_reg</mat-icon>
               </button>
             }
+            @if (canShowReject(row)) {
+              <button mat-icon-button matTooltip="Reject" (click)="onReject(row)" type="button" aria-label="Reject merchant" class="view-merchants__action-btn view-merchants__action-btn--reject">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            }
             <button mat-icon-button matTooltip="Edit" (click)="onEdit(row)" type="button" aria-label="Edit merchant" class="view-merchants__action-btn view-merchants__action-btn--edit">
               <mat-icon>edit</mat-icon>
             </button>

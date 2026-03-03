@@ -17,6 +17,7 @@ export interface ItemApiItem {
   outletName?: string;
   price?: number;
   availability?: boolean;
+  discountAvailable?: boolean;
   itemImage?: string | null;
   status?: string;
   [key: string]: unknown;
@@ -35,6 +36,7 @@ export interface ViewItemRow {
   price: number;
   status: string;
   availability: boolean;
+  discountAvailable: boolean;
   itemImage: string | null;
 }
 
@@ -51,6 +53,7 @@ function mapApiItemToRow(item: ItemApiItem): ViewItemRow {
     price: Number(item.price ?? 0),
     status: String(item.status ?? 'ACTIVE'),
     availability: item.availability === true,
+    discountAvailable: item.discountAvailable === true,
     itemImage: item.itemImage ?? null,
   };
 }
@@ -99,7 +102,20 @@ export class AdminItemsApiService {
       );
   }
 
-  createItem(body: { name: string; description: string; status: string }): Observable<unknown> {
+  /**
+   * POST /find-it/api/items
+   * Body: { itemName, itemDescription, categoryId, outletId, price, availability, itemImage, status }
+   */
+  createItem(body: {
+    itemName: string;
+    itemDescription: string;
+    categoryId: number;
+    outletId: number;
+    price: number;
+    availability: boolean;
+    itemImage: string | null;
+    status: string;
+  }): Observable<unknown> {
     const token = this.auth.token();
     if (!token) return of(null);
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };

@@ -15,6 +15,11 @@ export interface DiscountDetailDialogData {
   template: `
     <h2 mat-dialog-title>Discount: {{ data.discount.discountName }}</h2>
     <mat-dialog-content class="discount-detail-dialog__content">
+      @if (data.discount.discountImage) {
+        <div class="discount-detail-dialog__image-wrap">
+          <img [src]="data.discount.discountImage" alt="Discount image" class="discount-detail-dialog__image" />
+        </div>
+      }
       <div class="discount-detail-dialog__info">
         <p><strong>ID:</strong> {{ data.discount.discountId }}</p>
         <p><strong>Type:</strong> {{ data.discount.discountType }}</p>
@@ -44,6 +49,17 @@ export interface DiscountDetailDialogData {
     .discount-detail-dialog__content {
       min-width: 360px;
       max-width: 480px;
+    }
+    .discount-detail-dialog__image-wrap {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .discount-detail-dialog__image {
+      max-width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--mat-sys-outline-variant);
     }
     .discount-detail-dialog__info {
       margin-bottom: 1.25rem;

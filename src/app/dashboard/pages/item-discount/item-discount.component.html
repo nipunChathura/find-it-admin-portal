@@ -59,7 +59,7 @@
     </div>
 
     <div class="item-discount-page__table-wrap">
-      <table mat-table [dataSource]="dataSource" matSort class="item-discount-page__table" multiTemplateDataRows>
+      <table mat-table [dataSource]="dataSource" matSort class="item-discount-page__table">
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let row" class="item-discount-page__actions-cell" (click)="$event.stopPropagation()">
@@ -71,17 +71,19 @@
             </button>
           </td>
         </ng-container>
-        <ng-container matColumnDef="expand">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let row" (click)="$event.stopPropagation()">
-            <button mat-icon-button type="button" (click)="toggleExpand(row)" [attr.aria-label]="isExpanded(row) ? 'Collapse' : 'Expand'">
-              <mat-icon>{{ isExpanded(row) ? 'expand_less' : 'expand_more' }}</mat-icon>
-            </button>
-          </td>
-        </ng-container>
         <ng-container matColumnDef="discountId">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
           <td mat-cell *matCellDef="let row">{{ row.discountId }}</td>
+        </ng-container>
+        <ng-container matColumnDef="discountImage">
+          <th mat-header-cell *matHeaderCellDef>Image</th>
+          <td mat-cell *matCellDef="let row" class="item-discount-page__image-cell">
+            @if (row.discountImage) {
+              <img [src]="row.discountImage" alt="" class="item-discount-page__thumb" />
+            } @else {
+              <span class="item-discount-page__no-image">—</span>
+            }
+          </td>
         </ng-container>
         <ng-container matColumnDef="discountName">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
@@ -114,26 +116,8 @@
           <td mat-cell *matCellDef="let row">{{ row.endDate || '—' }}</td>
         </ng-container>
 
-        <ng-container matColumnDef="expandedDetail">
-          <td mat-cell *matCellDef="let row" [attr.colspan]="displayedColumns.length">
-            <div class="item-discount-page__expanded">
-              <span class="item-discount-page__expanded-label">Items:</span>
-              @if (row.items?.length) {
-                <ul class="item-discount-page__item-list">
-                  @for (item of row.items; track item.itemId) {
-                    <li>{{ item.itemName }}</li>
-                  }
-                </ul>
-              } @else {
-                <span class="item-discount-page__expanded-empty">No items</span>
-              }
-            </div>
-          </td>
-        </ng-container>
-
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="onRowClick(row)" [class.item-discount-page__row--selected]="isSelected(row)" class="item-discount-page__row"></tr>
-        <tr mat-row *matRowDef="let row; columns: [expandedColumn]" class="item-discount-page__expanded-row" [style.display]="isExpanded(row) ? '' : 'none'"></tr>
 
         <tr class="item-discount-page__no-data" *matNoDataRow>
           <td class="mat-cell" [attr.colspan]="displayedColumns.length">No discounts found.</td>

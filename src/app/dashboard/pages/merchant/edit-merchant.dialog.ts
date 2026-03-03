@@ -48,6 +48,10 @@ const MERCHANT_TYPE_OPTIONS = [
         <input matInput [(ngModel)]="merchantName" name="merchantName" />
       </mat-form-field>
       <mat-form-field appearance="outline" class="edit-merchant-dialog__field">
+        <mat-label>Username</mat-label>
+        <input matInput [(ngModel)]="username" name="username" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="edit-merchant-dialog__field">
         <mat-label>Email</mat-label>
         <input matInput type="email" [(ngModel)]="merchantEmail" name="merchantEmail" />
       </mat-form-field>
@@ -63,10 +67,22 @@ const MERCHANT_TYPE_OPTIONS = [
         <mat-label>Address</mat-label>
         <input matInput [(ngModel)]="merchantAddress" name="merchantAddress" />
       </mat-form-field>
-      <mat-form-field appearance="outline" class="edit-merchant-dialog__field">
-        <mat-label>Profile Image URL</mat-label>
-        <input matInput [(ngModel)]="merchantProfileImage" name="merchantProfileImage" />
-      </mat-form-field>
+      <div class="edit-merchant-dialog__field edit-merchant-dialog__image-block">
+        <label class="edit-merchant-dialog__label">Merchant profile image</label>
+        <input #editProfileInput type="file" accept="image/*" (change)="onImageSelected($event)" class="edit-merchant-dialog__file-input" />
+        <div class="edit-merchant-dialog__preview-actions">
+          <button mat-stroked-button type="button" (click)="editProfileInput.click()">Change image</button>
+          <button mat-stroked-button type="button" (click)="clearImage()">Remove image</button>
+        </div>
+        @if (merchantProfileImage) {
+          <div class="edit-merchant-dialog__preview-wrap">
+            <span class="edit-merchant-dialog__preview-label">Current image:</span>
+            <img [src]="merchantProfileImage" alt="Profile" class="edit-merchant-dialog__preview-img" />
+          </div>
+        } @else {
+          <p class="edit-merchant-dialog__no-image">No image. Use the file input above to add one.</p>
+        }
+      </div>
       <mat-form-field appearance="outline" class="edit-merchant-dialog__field">
         <mat-label>Merchant Type</mat-label>
         <mat-select [(ngModel)]="merchantType" name="merchantType">
@@ -101,6 +117,13 @@ const MERCHANT_TYPE_OPTIONS = [
       mat-dialog-actions { padding-top: 0.5rem; gap: 0.5rem; }
       mat-dialog-actions button { border: 1px solid var(--mat-sys-outline-variant); }
       .dialog-cancel-btn { color: #c62828; }
+      .edit-merchant-dialog__image-block .edit-merchant-dialog__label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--mat-sys-on-surface-variant); }
+      .edit-merchant-dialog__file-input { display: none; }
+      .edit-merchant-dialog__preview-actions { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+      .edit-merchant-dialog__preview-wrap { margin-top: 0.5rem; }
+      .edit-merchant-dialog__preview-label { display: block; font-size: 0.875rem; margin-bottom: 0.25rem; }
+      .edit-merchant-dialog__preview-img { max-width: 160px; max-height: 120px; object-fit: contain; display: block; border-radius: 4px; }
+      .edit-merchant-dialog__no-image { font-size: 0.875rem; color: var(--mat-sys-on-surface-variant); margin: 0.5rem 0 0 0; }
     `,
   ],
 })
@@ -112,6 +135,7 @@ export class EditMerchantDialogComponent {
   readonly merchantTypeOptions = MERCHANT_TYPE_OPTIONS;
 
   merchantName: string;
+  username: string;
   merchantEmail: string;
   merchantNic: string;
   merchantProfileImage: string;
@@ -123,6 +147,7 @@ export class EditMerchantDialogComponent {
 
   constructor() {
     this.merchantName = this.data.merchantName ?? '';
+    this.username = this.data.username ?? '';
     this.merchantEmail = this.data.merchantEmail ?? '';
     this.merchantNic = this.data.merchantNic ?? '';
     this.merchantProfileImage = this.data.merchantProfileImage ?? '';
@@ -133,10 +158,26 @@ export class EditMerchantDialogComponent {
     this.parentMerchantName = this.data.parentMerchantName ?? '';
   }
 
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.merchantProfileImage = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearImage(): void {
+    this.merchantProfileImage = '';
+  }
+
   onUpdate(): void {
     this.dialogRef.close({
       merchantId: this.data.merchantId,
       merchantName: this.merchantName.trim(),
+      username: this.username.trim(),
       merchantEmail: this.merchantEmail.trim(),
       merchantNic: this.merchantNic.trim(),
       merchantProfileImage: this.merchantProfileImage.trim(),

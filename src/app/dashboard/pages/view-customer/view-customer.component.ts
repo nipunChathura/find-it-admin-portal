@@ -12,8 +12,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AdminCustomersApiService, ViewCustomerRow } from '../../../core/api/admin-customers.api';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { DeleteCustomerConfirmDialogComponent, DeleteCustomerConfirmData } from './delete-customer-confirm.dialog';
 import { EditCustomerDialogComponent, EditCustomerDialogResult } from './edit-customer.dialog';
 import { AddCustomerDialogComponent, AddCustomerDialogResult } from './add-customer.dialog';
@@ -48,7 +48,6 @@ const MEMBERSHIP_TYPE_OPTIONS = [
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './view-customer.component.html',
   styleUrl: './view-customer.component.scss',
@@ -70,25 +69,9 @@ export class ViewCustomerComponent implements AfterViewInit {
   constructor(
     private readonly dialog: MatDialog,
     private readonly adminCustomersApi: AdminCustomersApiService,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {
     this.loadCustomers();
-  }
-
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      panelClass: ['snackbar-success'],
-      verticalPosition: 'top',
-    });
-  }
-
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
   }
 
   onAddCustomer(): void {
@@ -112,11 +95,11 @@ export class ViewCustomerComponent implements AfterViewInit {
     };
     this.adminCustomersApi.createCustomer(body).subscribe({
       next: () => {
-        this.showSuccess('Customer added successfully.');
+        this.snackbar.showSuccess('Customer added successfully.');
         this.loadCustomers();
       },
       error: () => {
-        this.showError('Failed to add customer.');
+        this.snackbar.showError('Failed to add customer.');
         this.loadCustomers();
       },
     });
@@ -162,11 +145,11 @@ export class ViewCustomerComponent implements AfterViewInit {
     };
     this.adminCustomersApi.updateCustomer(result.id, body).subscribe({
       next: () => {
-        this.showSuccess('Customer updated successfully.');
+        this.snackbar.showSuccess('Customer updated successfully.');
         this.loadCustomers();
       },
       error: () => {
-        this.showError('Failed to update customer.');
+        this.snackbar.showError('Failed to update customer.');
         this.loadCustomers();
       },
     });
@@ -188,11 +171,11 @@ export class ViewCustomerComponent implements AfterViewInit {
   private deleteCustomer(row: ViewCustomerRow): void {
     this.adminCustomersApi.deleteCustomer(row.id).subscribe({
       next: () => {
-        this.showSuccess('Customer deleted successfully.');
+        this.snackbar.showSuccess('Customer deleted successfully.');
         this.loadCustomers();
       },
       error: () => {
-        this.showError('Failed to delete customer.');
+        this.snackbar.showError('Failed to delete customer.');
         this.loadCustomers();
       },
     });
@@ -254,7 +237,7 @@ export class ViewCustomerComponent implements AfterViewInit {
       error: () => {
         this.allData = [];
         this.dataSource.data = [];
-        this.showError('Failed to load customers. Please check the connection and try again.');
+        this.snackbar.showError('Failed to load customers. Please check the connection and try again.');
       },
     });
   }

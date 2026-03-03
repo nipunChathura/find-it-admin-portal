@@ -13,7 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { AdminPaymentsApiService, CreatePaymentBody, PaymentRow } from '../../../core/api/admin-payments.api';
 import { AdminOutletsApiService } from '../../../core/api/admin-outlets.api';
 import { AddPaymentDialogComponent } from './add-payment.dialog';
@@ -44,7 +44,6 @@ const STATUS_OPTIONS = [
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './outlet-payment.component.html',
   styleUrl: './outlet-payment.component.scss',
@@ -77,7 +76,7 @@ export class OutletPaymentComponent implements AfterViewInit {
     private readonly adminPaymentsApi: AdminPaymentsApiService,
     private readonly adminOutletsApi: AdminOutletsApiService,
     private readonly dialog: MatDialog,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {
     this.loadPayments();
     this.loadDefaultOutletOptions();
@@ -171,13 +170,6 @@ export class OutletPaymentComponent implements AfterViewInit {
     this.loadPayments();
   }
 
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', { duration: 4000, verticalPosition: 'top' });
-  }
-
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', { duration: 5000, verticalPosition: 'top' });
-  }
 
   onAddPayment(): void {
     this.dialog
@@ -187,10 +179,10 @@ export class OutletPaymentComponent implements AfterViewInit {
         if (result == null) return;
         this.adminPaymentsApi.createPayment(result).subscribe({
           next: () => {
-            this.showSuccess('Payment added successfully.');
+            this.snackbar.showSuccess('Payment added successfully.');
             this.loadPayments();
           },
-          error: () => this.showError('Failed to add payment.'),
+          error: () => this.snackbar.showError('Failed to add payment.'),
         });
       });
   }
@@ -203,10 +195,10 @@ export class OutletPaymentComponent implements AfterViewInit {
         if (result == null) return;
         this.adminPaymentsApi.updatePayment(row.paymentId, result).subscribe({
           next: () => {
-            this.showSuccess('Payment updated successfully.');
+            this.snackbar.showSuccess('Payment updated successfully.');
             this.loadPayments();
           },
-          error: () => this.showError('Failed to update payment.'),
+          error: () => this.snackbar.showError('Failed to update payment.'),
         });
       });
   }
@@ -222,10 +214,10 @@ export class OutletPaymentComponent implements AfterViewInit {
         if (!confirmed) return;
         this.adminPaymentsApi.deletePayment(row.paymentId).subscribe({
           next: () => {
-            this.showSuccess('Payment deleted successfully.');
+            this.snackbar.showSuccess('Payment deleted successfully.');
             this.loadPayments();
           },
-          error: () => this.showError('Failed to delete payment.'),
+          error: () => this.snackbar.showError('Failed to delete payment.'),
         });
       });
   }
@@ -237,10 +229,10 @@ export class OutletPaymentComponent implements AfterViewInit {
   onApprove(row: PaymentRow): void {
     this.adminPaymentsApi.approvePayment(row.paymentId).subscribe({
       next: () => {
-        this.showSuccess('Payment approved successfully.');
+        this.snackbar.showSuccess('Payment approved successfully.');
         this.loadPayments();
       },
-      error: () => this.showError('Failed to approve payment.'),
+      error: () => this.snackbar.showError('Failed to approve payment.'),
     });
   }
 

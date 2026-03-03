@@ -12,6 +12,8 @@ export interface CreateDiscountBody {
   endDate: string;
   status: string;
   itemIds: number[];
+  /** Optional discount image URL (e.g. "https://example.com/sale.png"). */
+  discountImage?: string | null;
 }
 
 /** Alias for create body (same shape as update). */
@@ -34,6 +36,7 @@ export interface DiscountApiItem {
   discountValue?: number;
   startDate?: string;
   endDate?: string;
+  discountImage?: string;
   itemIds?: number[];
   items?: DiscountItemApi[];
   [key: string]: unknown;
@@ -48,6 +51,7 @@ export interface DiscountRow {
   discountValue: number;
   startDate: string;
   endDate: string;
+  discountImage?: string;
   itemIds: number[];
   items: { itemId: number; itemName: string }[];
 }
@@ -65,6 +69,7 @@ function mapApiDiscountToRow(d: DiscountApiItem): DiscountRow {
     discountValue: Number(d.discountValue ?? 0),
     startDate: String(d.startDate ?? ''),
     endDate: String(d.endDate ?? ''),
+    discountImage: d.discountImage != null ? String(d.discountImage) : undefined,
     itemIds: Array.isArray(d.itemIds) ? d.itemIds : [],
     items,
   };

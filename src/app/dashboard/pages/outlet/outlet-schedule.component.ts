@@ -10,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -113,7 +113,6 @@ function entryToUpdatePayload(entry: OutletScheduleEntry, row: OutletScheduleRow
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatSnackBarModule,
     MatTooltipModule,
     MatDatepickerModule,
     MatNativeDateModule,
@@ -155,7 +154,7 @@ export class OutletScheduleComponent implements OnInit {
     private readonly injector: Injector,
     private readonly outletsApi: AdminOutletsApiService,
     private readonly schedulesApi: OutletSchedulesApiService,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {}
 
   ngOnInit(): void {
@@ -258,7 +257,7 @@ export class OutletScheduleComponent implements OnInit {
 
   onAdd(): void {
     if (this.selectedOutletId == null) {
-      this.snackBar.open('Please select an outlet first.', 'Close', { duration: 3000 });
+      this.snackbar.showError('Please select an outlet first.');
       return;
     }
     const outletId = this.selectedOutletId;
@@ -272,11 +271,11 @@ export class OutletScheduleComponent implements OnInit {
       const payload = entryToCreatePayload(entry);
       this.schedulesApi.createSchedule(outletId, payload).subscribe({
         next: () => {
-          this.snackBar.open('Schedule added.', 'Close', { duration: 3000 });
+          this.snackbar.showSuccess('Schedule added successfully.');
           this.loadSchedules();
         },
         error: () => {
-          this.snackBar.open('Failed to add schedule.', 'Close', { duration: 4000 });
+          this.snackbar.showError('Failed to add schedule.');
         },
       });
     });
@@ -284,7 +283,7 @@ export class OutletScheduleComponent implements OnInit {
 
   onEdit(row: OutletScheduleRow): void {
     if (this.selectedOutletId == null || row.id == null) {
-      this.snackBar.open('Cannot edit: outlet or schedule id missing.', 'Close', { duration: 3000 });
+      this.snackbar.showError('Cannot edit: outlet or schedule id missing.');
       return;
     }
     const outletId = this.selectedOutletId;
@@ -299,11 +298,11 @@ export class OutletScheduleComponent implements OnInit {
       const scheduleId = row.id!;
       this.schedulesApi.updateSchedule(outletId, scheduleId, payload).subscribe({
         next: () => {
-          this.snackBar.open('Schedule updated.', 'Close', { duration: 3000 });
+          this.snackbar.showSuccess('Schedule updated successfully.');
           this.loadSchedules();
         },
         error: () => {
-          this.snackBar.open('Failed to update schedule.', 'Close', { duration: 4000 });
+          this.snackbar.showError('Failed to update schedule.');
         },
       });
     });
@@ -311,7 +310,7 @@ export class OutletScheduleComponent implements OnInit {
 
   onDelete(row: OutletScheduleRow): void {
     if (this.selectedOutletId == null || row.id == null) {
-      this.snackBar.open('Cannot delete: outlet or schedule id missing.', 'Close', { duration: 3000 });
+      this.snackbar.showError('Cannot delete: outlet or schedule id missing.');
       return;
     }
     const outletId = this.selectedOutletId;
@@ -328,11 +327,11 @@ export class OutletScheduleComponent implements OnInit {
       const scheduleId = row.id!;
       this.schedulesApi.deleteSchedule(outletId, scheduleId).subscribe({
         next: () => {
-          this.snackBar.open('Schedule deleted.', 'Close', { duration: 3000 });
+          this.snackbar.showSuccess('Schedule deleted successfully.');
           this.loadSchedules();
         },
         error: () => {
-          this.snackBar.open('Failed to delete schedule.', 'Close', { duration: 4000 });
+          this.snackbar.showError('Failed to delete schedule.');
         },
       });
     });

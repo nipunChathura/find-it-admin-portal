@@ -79,6 +79,10 @@
 
 .view-items__clear-btn {
   color: #c62828;
+
+  .mdc-button__label {
+    color: #c62828;
+  }
 }
 
 .view-items__clear-btn .mat-icon {
@@ -190,3 +194,4 @@
     justify-content: flex-end;
   }
 }
+

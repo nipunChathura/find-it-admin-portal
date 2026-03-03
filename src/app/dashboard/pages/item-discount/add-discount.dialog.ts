@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 import { CreateDiscountBody } from '../../../core/api/admin-discounts.api';
 import { AdminItemsApiService } from '../../../core/api/admin-items.api';
 
@@ -30,7 +32,10 @@ const DISCOUNT_TYPE_OPTIONS = [
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
+  providers: [provideNativeDateAdapter()],
   template: `
     <h2 mat-dialog-title>Add discount</h2>
     <mat-dialog-content class="add-discount-dialog__content">
@@ -52,11 +57,15 @@ const DISCOUNT_TYPE_OPTIONS = [
       </mat-form-field>
       <mat-form-field appearance="outline" class="add-discount-dialog__field">
         <mat-label>Start date</mat-label>
-        <input matInput [(ngModel)]="startDate" name="startDate" placeholder="YYYY-MM-DD" />
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDateModel" name="startDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
       </mat-form-field>
       <mat-form-field appearance="outline" class="add-discount-dialog__field">
         <mat-label>End date</mat-label>
-        <input matInput [(ngModel)]="endDate" name="endDate" placeholder="YYYY-MM-DD" />
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDateModel" name="endDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
       </mat-form-field>
       <mat-form-field appearance="outline" class="add-discount-dialog__field">
         <mat-label>Status</mat-label>
@@ -66,6 +75,17 @@ const DISCOUNT_TYPE_OPTIONS = [
           }
         </mat-select>
       </mat-form-field>
+      <div class="add-discount-dialog__field add-discount-dialog__image-wrap">
+        <label class="add-discount-dialog__image-label">Discount image (optional)</label>
+        <input type="file" accept="image/*" (change)="onImageSelected($event)" class="add-discount-dialog__file-input" #addImageInput />
+        @if (discountImage) {
+          <div class="add-discount-dialog__preview">
+            <span class="add-discount-dialog__preview-label">Selected image:</span>
+            <img [src]="discountImage" alt="Discount preview" class="add-discount-dialog__preview-img" />
+            <button mat-button type="button" (click)="clearImage()">Remove image</button>
+          </div>
+        }
+      </div>
       <mat-form-field appearance="outline" class="add-discount-dialog__field">
         <mat-label>Items</mat-label>
         <mat-select [(ngModel)]="itemIds" name="itemIds" multiple>
@@ -77,13 +97,19 @@ const DISCOUNT_TYPE_OPTIONS = [
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button">Cancel</button>
-      <button mat-raised-button color="primary" (click)="onSave()" type="button" [disabled]="!discountName.trim()">Add</button>
+      <button mat-button type="button" (click)="onCancel()">Cancel</button>
+      <button mat-raised-button color="primary" type="button" (click)="onSave()" [disabled]="!discountName.trim()">Add</button>
     </mat-dialog-actions>
   `,
   styles: [`
     .add-discount-dialog__content { min-width: 360px; }
     .add-discount-dialog__field { width: 100%; display: block; margin-bottom: 0.5rem; }
+    .add-discount-dialog__image-wrap { margin-top: 0.5rem; }
+    .add-discount-dialog__image-label { display: block; font-size: 0.75rem; color: var(--mat-sys-on-surface-variant); margin-bottom: 0.25rem; }
+    .add-discount-dialog__file-input { font-size: 0.875rem; }
+    .add-discount-dialog__preview { margin-top: 0.5rem; }
+    .add-discount-dialog__preview-label { display: block; font-size: 0.75rem; color: var(--mat-sys-on-surface-variant); margin-bottom: 0.25rem; }
+    .add-discount-dialog__preview-img { max-width: 160px; max-height: 120px; object-fit: contain; border-radius: 8px; border: 1px solid var(--mat-sys-outline-variant); display: block; margin-bottom: 0.25rem; }
   `],
 })
 export class AddDiscountDialogComponent {
@@ -97,9 +123,10 @@ export class AddDiscountDialogComponent {
   discountName = '';
   discountType = 'PERCENTAGE';
   discountValue = 0;
-  startDate = '';
-  endDate = '';
+  startDateModel: Date | null = null;
+  endDateModel: Date | null = null;
   status = 'ACTIVE';
+  discountImage = '';
   itemIds: number[] = [];
 
   constructor() {
@@ -113,15 +140,37 @@ export class AddDiscountDialogComponent {
     });
   }
 
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.discountImage = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearImage(): void {
+    this.discountImage = '';
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+
   onSave(): void {
+    const startDate = this.startDateModel ? formatDate(this.startDateModel, 'yyyy-MM-dd', 'en') : '';
+    const endDate = this.endDateModel ? formatDate(this.endDateModel, 'yyyy-MM-dd', 'en') : '';
     const body: CreateDiscountBody = {
       discountName: this.discountName.trim(),
       discountType: this.discountType,
       discountValue: Number(this.discountValue),
-      startDate: this.startDate.trim(),
-      endDate: this.endDate.trim(),
+      startDate,
+      endDate,
       status: this.status,
       itemIds: this.itemIds ?? [],
+      discountImage: this.discountImage || null,
     };
     this.dialogRef.close(body);
   }

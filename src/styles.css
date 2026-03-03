@@ -131,16 +131,46 @@ html {
   visibility: visible !important;
 }
 
-/* Snackbar notifications – success and error */
+/* Snackbar notifications – consistent customer alerts (success and error) */
 .snackbar-success.mat-mdc-snack-bar-container .mdc-snackbar__surface {
   background: #2e7d32;
-}
-.snackbar-success .mat-mdc-snack-bar-label {
   color: #fff;
 }
+.snackbar-success .mat-mdc-snack-bar-label,
+.snackbar-success .mat-mdc-button {
+  color: #fff !important;
+}
+/* API/error messages – red alert */
 .snackbar-error.mat-mdc-snack-bar-container .mdc-snackbar__surface {
-  background: #c62828;
+  background: #b71c1c !important;
+  color: #fff !important;
+  border: 1px solid #8b0000;
+  box-shadow: 0 2px 8px rgba(183, 28, 28, 0.4);
+}
+.snackbar-error .mat-mdc-snack-bar-label,
+.snackbar-error .mat-mdc-button {
+  color: #fff !important;
 }
 .snackbar-error .mat-mdc-snack-bar-label {
-  color: #fff;
+  font-weight: 500;
+}
+
+/* Dashboard pages – consistent layout and style */
+.content > * {
+  padding: 0;
+  margin: 0;
+}
+.content .mat-mdc-card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+}
+.content [class*='__title'],
+.content [class*='-page__title'],
+.content [class*='__header'] h1,
+.content h1.page-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--mat-sys-primary);
 }

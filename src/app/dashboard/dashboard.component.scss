@@ -9,6 +9,12 @@
 
 :host ::ng-deep .dashboard-sidenav .mat-drawer-inner-container {
   background: var(--mat-sys-surface-container);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 }
 
 .dashboard-sidenav {

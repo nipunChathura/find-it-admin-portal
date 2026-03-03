@@ -13,8 +13,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AdminDiscountsApiService, CreateDiscountBody, DiscountRow, UpdateDiscountBody } from '../../../core/api/admin-discounts.api';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { AdminItemsApiService } from '../../../core/api/admin-items.api';
 import { DiscountDetailDialogComponent } from './discount-detail.dialog';
 import { AddDiscountDialogComponent } from './add-discount.dialog';
@@ -44,7 +44,6 @@ const STATUS_OPTIONS = [
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './item-discount.component.html',
   styleUrl: './item-discount.component.scss',
@@ -56,8 +55,8 @@ export class ItemDiscountComponent implements AfterViewInit {
   readonly statusOptions = STATUS_OPTIONS;
   readonly displayedColumns: string[] = [
     'actions',
-    'expand',
     'discountId',
+    'discountImage',
     'discountName',
     'discountType',
     'discountValue',
@@ -65,10 +64,7 @@ export class ItemDiscountComponent implements AfterViewInit {
     'startDate',
     'endDate',
   ];
-  readonly expandedColumn = 'expandedDetail';
 
-  /** Which discount row is expanded (detail row visible below). */
-  expandedDiscountId: number | null = null;
   /** Selected row (for highlight and popup). */
   selectedRow: DiscountRow | null = null;
 
@@ -85,7 +81,7 @@ export class ItemDiscountComponent implements AfterViewInit {
     private readonly adminDiscountsApi: AdminDiscountsApiService,
     private readonly adminItemsApi: AdminItemsApiService,
     private readonly dialog: MatDialog,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {
     this.loadDiscounts();
     this.loadDefaultItemOptions();
@@ -148,7 +144,6 @@ export class ItemDiscountComponent implements AfterViewInit {
   loadDiscounts(): void {
     const status = this.statusFilter === 'all' ? '' : this.statusFilter;
     const itemId = this.itemIdFilter === '' ? '' : this.itemIdFilter;
-    this.expandedDiscountId = null;
     this.adminDiscountsApi.getDiscounts({ status, itemId }).subscribe({
       next: (rows) => {
         this.dataSource.data = rows;
@@ -157,15 +152,6 @@ export class ItemDiscountComponent implements AfterViewInit {
         this.dataSource.data = [];
       },
     });
-  }
-
-  toggleExpand(row: DiscountRow): void {
-    const id = row.discountId;
-    this.expandedDiscountId = this.expandedDiscountId === id ? null : id;
-  }
-
-  isExpanded(row: DiscountRow): boolean {
-    return row.discountId === this.expandedDiscountId;
   }
 
   isSelected(row: DiscountRow): boolean {
@@ -193,11 +179,11 @@ export class ItemDiscountComponent implements AfterViewInit {
         if (result == null) return;
         this.adminDiscountsApi.createDiscount(result).subscribe({
           next: () => {
-            this.snackBar.open('Discount added.', undefined, { duration: 3000 });
+            this.snackbar.showSuccess('Discount added successfully.');
             this.loadDiscounts();
           },
           error: () => {
-            this.snackBar.open('Failed to add discount.', undefined, { duration: 4000 });
+            this.snackbar.showError('Failed to add discount.');
           },
         });
       });
@@ -215,11 +201,11 @@ export class ItemDiscountComponent implements AfterViewInit {
         if (result == null) return;
         this.adminDiscountsApi.updateDiscount(row.discountId, result).subscribe({
           next: () => {
-            this.snackBar.open('Discount updated.', undefined, { duration: 3000 });
+            this.snackbar.showSuccess('Discount updated successfully.');
             this.loadDiscounts();
           },
           error: () => {
-            this.snackBar.open('Failed to update discount.', undefined, { duration: 4000 });
+            this.snackbar.showError('Failed to update discount.');
           },
         });
       });
@@ -237,11 +223,11 @@ export class ItemDiscountComponent implements AfterViewInit {
         if (!confirmed) return;
         this.adminDiscountsApi.deleteDiscount(row.discountId).subscribe({
           next: () => {
-            this.snackBar.open('Discount deleted.', undefined, { duration: 3000 });
+            this.snackbar.showSuccess('Discount deleted successfully.');
             this.loadDiscounts();
           },
           error: () => {
-            this.snackBar.open('Failed to delete discount.', undefined, { duration: 4000 });
+            this.snackbar.showError('Failed to delete discount.');
           },
         });
       });

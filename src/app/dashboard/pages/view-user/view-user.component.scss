@@ -77,6 +77,10 @@
 .view-users__clear-btn {
   color: #c62828;
 
+  .mdc-button__label {
+    color: #c62828;
+  }
+
   .mat-icon {
     color: #c62828;
   }
@@ -116,6 +120,10 @@
   &.view-users__status-badge--approved {
     background: #e3f2fd;
     color: #1565c0;
+  }
+  &.view-users__status-badge--rejected {
+    background: #ffebee;
+    color: #c62828;
   }
   &.view-users__status-badge--forgot-password-pending {
     background: #f3e5f5;
@@ -172,6 +180,20 @@
   &.view-users__action-btn--approve:hover .mat-icon,
   &.view-users__action-btn--approve:focus-visible .mat-icon {
     color: #1b5e20;
+  }
+
+  &.view-users__action-btn--reject {
+    color: #c62828;
+
+    .mat-icon {
+      color: #c62828;
+    }
+  }
+  &.view-users__action-btn--reject:hover,
+  &.view-users__action-btn--reject:focus-visible {
+    .mat-icon {
+      color: #b71c1c;
+    }
   }
 }
 

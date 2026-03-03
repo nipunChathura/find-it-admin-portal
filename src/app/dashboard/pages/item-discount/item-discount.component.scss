@@ -66,6 +66,10 @@
 
 .item-discount-page__clear-btn {
   color: #c62828;
+
+  .mdc-button__label {
+    color: #c62828;
+  }
 }
 
 .item-discount-page__clear-btn .mat-icon {
@@ -80,6 +84,25 @@
 
 .item-discount-page__table {
   width: 100%;
+}
+
+.item-discount-page__image-cell {
+  padding: 0.35rem 0.5rem;
+  vertical-align: middle;
+}
+
+.item-discount-page__thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  display: block;
+}
+
+.item-discount-page__no-image {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
 }
 
 .item-discount-page__status-badge {
@@ -114,42 +137,6 @@
 
 .item-discount-page__table-wrap mat-paginator {
   border-top: 1px solid var(--mat-sys-outline-variant);
-}
-
-.item-discount-page__expanded-row {
-  background: var(--mat-sys-surface-container-low);
-}
-
-.item-discount-page__expanded-row td {
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-  vertical-align: top;
-}
-
-.item-discount-page__expanded {
-  padding-left: 2rem;
-}
-
-.item-discount-page__expanded-label {
-  font-weight: 600;
-  font-size: 0.875rem;
-  margin-right: 0.5rem;
-}
-
-.item-discount-page__item-list {
-  margin: 0.5rem 0 0 0;
-  padding-left: 1.25rem;
-  font-size: 0.875rem;
-}
-
-.item-discount-page__item-list li {
-  margin-bottom: 0.25rem;
-}
-
-.item-discount-page__expanded-empty {
-  font-size: 0.875rem;
-  color: var(--mat-sys-on-surface-variant);
 }
 
 .item-discount-page__row {
@@ -187,3 +174,4 @@
 .item-discount-page__actions-cell button[aria-label="Delete discount"]:hover .mat-icon {
   color: #b71c1c;
 }
+

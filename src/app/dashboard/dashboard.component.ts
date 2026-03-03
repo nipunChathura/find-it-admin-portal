@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../core/auth/auth.service';
 import { ProfilePopupDialogComponent } from './profile-popup.dialog';
 import { NotificationComponent } from './notification/notification.component';
@@ -27,6 +28,7 @@ import { NotificationComponent } from './notification/notification.component';
     MatButtonModule,
     MatTooltipModule,
     MatExpansionModule,
+    MatSnackBarModule,
     NotificationComponent,
   ],
   templateUrl: './dashboard.component.html',

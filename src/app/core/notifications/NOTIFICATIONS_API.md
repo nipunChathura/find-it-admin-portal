@@ -68,6 +68,6 @@ Body: `{}` (empty) or omit.
 
 2. **URL**: If your API base differs, set `NOTIFICATIONS_URL` in `notification.service.ts`.
 
-3. **Polling**: The service polls every 10 seconds when the app is loaded. No WebSocket required.
+3. **Polling**: The service polls every 5 minutes when the app is loaded. No WebSocket required.
 
 4. **Auth**: Uses `AuthService.token()`; ensure the user is logged in so the Bearer token is sent.

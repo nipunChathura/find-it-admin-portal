@@ -13,7 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { AdminItemsApiService, ViewItemRow } from '../../../core/api/admin-items.api';
 import { AdminCategoriesApiService } from '../../../core/api/admin-categories.api';
 import { AdminOutletsApiService } from '../../../core/api/admin-outlets.api';
@@ -50,7 +50,6 @@ const AVAILABILITY_OPTIONS = [
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './view-item.component.html',
   styleUrl: './view-item.component.scss',
@@ -71,6 +70,7 @@ export class ViewItemComponent implements AfterViewInit {
     'price',
     'status',
     'availability',
+    'discountAvailability',
   ];
 
   statusFilter = 'all';
@@ -96,7 +96,7 @@ export class ViewItemComponent implements AfterViewInit {
     private readonly adminItemsApi: AdminItemsApiService,
     private readonly adminCategoriesApi: AdminCategoriesApiService,
     private readonly adminOutletsApi: AdminOutletsApiService,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {
     this.loadDefaultCategoryOptions();
     this.loadDefaultOutletOptions();
@@ -209,21 +209,6 @@ export class ViewItemComponent implements AfterViewInit {
     this.loadDefaultOutletOptions();
   }
 
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      panelClass: ['snackbar-success'],
-      verticalPosition: 'top',
-    });
-  }
-
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
-  }
 
   onAddItem(): void {
     const dialogRef = this.dialog.open(AddItemDialogComponent, {
@@ -239,17 +224,22 @@ export class ViewItemComponent implements AfterViewInit {
 
   private addItem(newItem: AddItemDialogResult): void {
     const body = {
-      name: newItem.name,
-      description: newItem.description,
+      itemName: newItem.itemName,
+      itemDescription: newItem.itemDescription,
+      categoryId: newItem.categoryId,
+      outletId: newItem.outletId,
+      price: newItem.price,
+      availability: newItem.availability,
+      itemImage: newItem.itemImage,
       status: newItem.status,
     };
     this.adminItemsApi.createItem(body).subscribe({
       next: () => {
-        this.showSuccess('Item added successfully.');
+        this.snackbar.showSuccess('Item added successfully.');
         this.loadItems();
       },
       error: () => {
-        this.showError('Failed to add item.');
+        this.snackbar.showError('Failed to add item.');
         this.loadItems();
       },
     });
@@ -293,11 +283,11 @@ export class ViewItemComponent implements AfterViewInit {
     };
     this.adminItemsApi.updateItem(result.id, body).subscribe({
       next: () => {
-        this.showSuccess('Item updated successfully.');
+        this.snackbar.showSuccess('Item updated successfully.');
         this.loadItems();
       },
       error: () => {
-        this.showError('Failed to update item.');
+        this.snackbar.showError('Failed to update item.');
         this.loadItems();
       },
     });
@@ -319,11 +309,11 @@ export class ViewItemComponent implements AfterViewInit {
   private deleteItem(row: ViewItemRow): void {
     this.adminItemsApi.deleteItem(row.id).subscribe({
       next: () => {
-        this.showSuccess('Item deleted successfully.');
+        this.snackbar.showSuccess('Item deleted successfully.');
         this.loadItems();
       },
       error: () => {
-        this.showError('Failed to delete item.');
+        this.snackbar.showError('Failed to delete item.');
         this.loadItems();
       },
     });
@@ -351,6 +341,7 @@ export class ViewItemComponent implements AfterViewInit {
         case 'price': return row.price;
         case 'status': return row.status;
         case 'availability': return row.availability ? 1 : 0;
+        case 'discountAvailability': return row.discountAvailable ? 1 : 0;
         default: return '';
       }
     };

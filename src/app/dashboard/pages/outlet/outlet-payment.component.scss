@@ -66,6 +66,10 @@
 
 .outlet-payment-page__clear-btn {
   color: #c62828;
+
+  .mdc-button__label {
+    color: #c62828;
+  }
 }
 
 .outlet-payment-page__clear-btn .mat-icon {
@@ -140,3 +144,4 @@
 .outlet-payment-page__action-approve .mat-icon {
   color: #2e7d32;
 }
+
