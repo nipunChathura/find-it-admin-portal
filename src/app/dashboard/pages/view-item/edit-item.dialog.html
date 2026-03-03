@@ -1,8 +1,32 @@
 <h2 mat-dialog-title>Edit Item</h2>
 <mat-dialog-content>
   <p class="edit-item-dialog__readonly">
-    <strong>ID:</strong> {{ data.id }} &nbsp;|&nbsp; <strong>Category:</strong> {{ data.categoryName }} &nbsp;|&nbsp; <strong>Outlet:</strong> {{ data.outletName }}
+    <strong>ID:</strong> {{ data.id }} &nbsp;|&nbsp; <strong>Outlet:</strong> {{ data.outletName }}
   </p>
+  <mat-form-field appearance="outline" class="edit-item-dialog__field">
+    <mat-label>Category</mat-label>
+    <input
+      matInput
+      [(ngModel)]="categorySearchText"
+      name="categorySearch"
+      placeholder="Search category..."
+      [matAutocomplete]="categoryAuto"
+      (ngModelChange)="onCategorySearchChange($event)"
+    />
+    <mat-autocomplete
+      #categoryAuto="matAutocomplete"
+      (optionSelected)="onCategorySelected($event.option.value)"
+    >
+      @for (cat of categorySearchResults$ | async; track cat.id) {
+        <mat-option [value]="cat">{{ cat.name }}</mat-option>
+      }
+      @empty {
+        @if (categorySearchText?.trim()) {
+          <mat-option disabled>No categories found</mat-option>
+        }
+      }
+    </mat-autocomplete>
+  </mat-form-field>
   <mat-form-field appearance="outline" class="edit-item-dialog__field">
     <mat-label>Item Name</mat-label>
     <input matInput [(ngModel)]="name" name="name" />

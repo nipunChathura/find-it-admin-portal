@@ -66,6 +66,7 @@ export class OutletComponent implements AfterViewInit {
     'outletPhone',
     'outletType',
     'merchantName',
+    'subMerchantName',
     'status',
   ];
 
@@ -166,6 +167,8 @@ export class OutletComponent implements AfterViewInit {
           return (row.outletType ?? '').toLowerCase();
         case 'merchantName':
           return (row.merchantName ?? '').toLowerCase();
+        case 'subMerchantName':
+          return (row.subMerchantName ?? '').toLowerCase();
         case 'status':
           return row.status ?? '';
         default:

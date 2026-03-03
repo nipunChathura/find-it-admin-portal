@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -7,6 +7,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { Subject, Observable, of } from 'rxjs';
+import { debounceTime, switchMap, map, takeUntil } from 'rxjs/operators';
+import { AdminCategoriesApiService } from '../../../core/api/admin-categories.api';
+import { CategoryRow } from '../../../core/api/admin-categories.api';
 
 export interface EditItemDialogData {
   id: number;
@@ -41,6 +46,8 @@ const STATUS_OPTIONS = [
   { value: 'PENDING', label: 'PENDING' },
 ];
 
+const CATEGORY_SEARCH_LIMIT = 10;
+
 @Component({
   selector: 'app-edit-item-dialog',
   standalone: true,
@@ -51,6 +58,7 @@ const STATUS_OPTIONS = [
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatAutocompleteModule,
     MatCheckboxModule,
     MatButtonModule,
   ],
@@ -65,13 +73,20 @@ const STATUS_OPTIONS = [
     '.dialog-cancel-btn { color: #c62828; }',
   ],
 })
-export class EditItemDialogComponent {
+export class EditItemDialogComponent implements OnInit, OnDestroy {
   readonly data: EditItemDialogData = inject(MAT_DIALOG_DATA);
   private readonly dialogRef = inject(MatDialogRef<EditItemDialogComponent>);
+  private readonly categoriesApi = inject(AdminCategoriesApiService);
+  private readonly categorySearchTerm$ = new Subject<string>();
+  private readonly destroy$ = new Subject<void>();
 
   readonly statusOptions = STATUS_OPTIONS;
+  categorySearchResults$!: Observable<CategoryRow[]>;
+
   name: string;
   description: string;
+  categoryId: number;
+  categorySearchText: string;
   price: number;
   availability: boolean;
   itemImage: string;
@@ -80,10 +95,40 @@ export class EditItemDialogComponent {
   constructor() {
     this.name = this.data.name;
     this.description = this.data.description;
+    this.categoryId = this.data.categoryId;
+    this.categorySearchText = this.data.categoryName ?? '';
     this.price = this.data.price;
     this.availability = this.data.availability;
     this.itemImage = this.data.itemImage ?? '';
     this.status = this.data.status;
+  }
+
+  ngOnInit(): void {
+    this.categorySearchResults$ = this.categorySearchTerm$.pipe(
+      debounceTime(250),
+      switchMap((q) => {
+        const term = (q ?? '').trim();
+        if (!term) return of([]);
+        return this.categoriesApi.getCategories({ search: term }).pipe(
+          map((list) => list.slice(0, CATEGORY_SEARCH_LIMIT)),
+        );
+      }),
+      takeUntil(this.destroy$),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onCategorySearchChange(value: string): void {
+    this.categorySearchTerm$.next(value ?? '');
+  }
+
+  onCategorySelected(cat: CategoryRow): void {
+    this.categoryId = cat.id;
+    this.categorySearchText = cat.name ?? '';
   }
 
   onUpdate(): void {
@@ -92,7 +137,7 @@ export class EditItemDialogComponent {
       id: this.data.id,
       itemName: this.name.trim(),
       itemDescription: this.description.trim(),
-      categoryId: this.data.categoryId,
+      categoryId: this.categoryId,
       outletId: this.data.outletId,
       price: Number(this.price),
       availability: this.availability,

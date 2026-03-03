@@ -69,6 +69,7 @@ export class AddOutletDialogComponent implements OnInit, OnDestroy {
   cityOptions$!: Observable<{ id: number; name: string }[]>;
 
   merchantId: number | null = null;
+  subMerchantId: number | null = null;
   merchantSearchText = '';
   provinceId: number | null = null;
   provinceSearchText = '';
@@ -143,6 +144,7 @@ export class AddOutletDialogComponent implements OnInit, OnDestroy {
 
   onMerchantSelected(m: MerchantRow): void {
     this.merchantId = m.merchantId;
+    this.subMerchantId = m.subMerchantId != null ? m.subMerchantId : null;
     this.merchantSearchText = m.merchantName ?? '';
   }
 
@@ -205,9 +207,10 @@ export class AddOutletDialogComponent implements OnInit, OnDestroy {
     if (!merchantId || !provinceId || !districtId || !cityId) {
       return;
     }
+    const subMerchantId = this.subMerchantId != null ? this.subMerchantId : null;
     const payload: CreateOutletPayload = {
       merchantId,
-      subMerchantId: null,
+      subMerchantId,
       outletName: this.outletName.trim(),
       businessRegistrationNumber: this.businessRegistrationNumber.trim(),
       taxIdentificationNumber: this.taxIdentificationNumber.trim(),

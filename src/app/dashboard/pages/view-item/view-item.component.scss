@@ -99,6 +99,10 @@
   width: 100%;
 }
 
+.view-items__row-click {
+  cursor: pointer;
+}
+
 .view-items__status-badge {
   display: inline-block;
   padding: 0.25rem 0.6rem;

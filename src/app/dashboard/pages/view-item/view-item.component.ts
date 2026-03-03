@@ -20,6 +20,7 @@ import { AdminOutletsApiService } from '../../../core/api/admin-outlets.api';
 import { DeleteItemConfirmDialogComponent, DeleteItemConfirmData } from './delete-item-confirm.dialog';
 import { EditItemDialogComponent, EditItemDialogResult } from './edit-item.dialog';
 import { AddItemDialogComponent, AddItemDialogResult } from './add-item.dialog';
+import { ItemDetailDialogComponent } from './item-detail.dialog';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -64,7 +65,6 @@ export class ViewItemComponent implements AfterViewInit {
     'actions',
     'id',
     'name',
-    'description',
     'categoryName',
     'outletName',
     'price',
@@ -245,6 +245,13 @@ export class ViewItemComponent implements AfterViewInit {
     });
   }
 
+  onRowClick(row: ViewItemRow): void {
+    this.dialog.open(ItemDetailDialogComponent, {
+      width: '480px',
+      data: { ...row },
+    });
+  }
+
   onEdit(row: ViewItemRow): void {
     const dialogRef = this.dialog.open(EditItemDialogComponent, {
       width: '480px',
@@ -335,7 +342,6 @@ export class ViewItemComponent implements AfterViewInit {
       switch (prop) {
         case 'id': return row.id;
         case 'name': return row.name.toLowerCase();
-        case 'description': return (row.description ?? '').toLowerCase();
         case 'categoryName': return row.categoryName.toLowerCase();
         case 'outletName': return row.outletName.toLowerCase();
         case 'price': return row.price;

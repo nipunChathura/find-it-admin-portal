@@ -39,6 +39,7 @@ export interface OutletRow {
   outletPhone: string;
   status: string;
   merchantName: string;
+  subMerchantName: string;
   outletType: string;
 }
 
@@ -49,6 +50,7 @@ export interface OutletApiItem {
   outletType?: string;
   merchantId?: number;
   merchantName?: string;
+  subMerchantName?: string;
   status?: string;
   contactNumber?: string;
   phone?: string;
@@ -103,6 +105,7 @@ function mapApiItemToRow(item: OutletApiItem): OutletRow {
     outletPhone: String(item.contactNumber ?? item.phone ?? ''),
     status: String(item.status ?? 'PENDING'),
     merchantName: String(item.merchantName ?? ''),
+    subMerchantName: String(item.subMerchantName ?? ''),
     outletType: String(item.outletType ?? ''),
   };
 }
