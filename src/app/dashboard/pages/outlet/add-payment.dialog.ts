@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -71,10 +71,18 @@ const TYPE_OPTIONS = [
           }
         </mat-select>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="add-payment-dialog__field">
-        <mat-label>Receipt image</mat-label>
-        <input matInput [(ngModel)]="receiptImage" name="receiptImage" placeholder="Optional" />
-      </mat-form-field>
+      <div class="add-payment-dialog__field add-payment-dialog__receipt-block">
+        <label class="add-payment-dialog__receipt-label">Receipt image (optional)</label>
+        <input #receiptFileInput type="file" accept="image/*" (change)="onReceiptImageSelected($event)" class="add-payment-dialog__file-input" />
+        <button mat-stroked-button type="button" (click)="receiptFileInput.click()">Browse</button>
+        @if (receiptImage) {
+          <div class="add-payment-dialog__receipt-preview">
+            <span class="add-payment-dialog__receipt-preview-label">Selected image:</span>
+            <img [src]="receiptImage" alt="Receipt preview" class="add-payment-dialog__receipt-img" />
+            <button mat-stroked-button type="button" (click)="clearReceiptImage()">Remove image</button>
+          </div>
+        }
+      </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close type="button">Cancel</button>
@@ -84,11 +92,17 @@ const TYPE_OPTIONS = [
   styles: [`
     .add-payment-dialog__content { min-width: 360px; }
     .add-payment-dialog__field { width: 100%; display: block; margin-bottom: 0.5rem; }
+    .add-payment-dialog__receipt-block .add-payment-dialog__receipt-label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--mat-sys-on-surface-variant); }
+    .add-payment-dialog__file-input { display: none; }
+    .add-payment-dialog__receipt-preview { margin-top: 0.75rem; }
+    .add-payment-dialog__receipt-preview-label { display: block; font-size: 0.875rem; margin-bottom: 0.25rem; }
+    .add-payment-dialog__receipt-img { max-width: 200px; max-height: 140px; object-fit: contain; display: block; margin-bottom: 0.5rem; border-radius: 4px; border: 1px solid var(--mat-sys-outline-variant); }
   `],
 })
 export class AddPaymentDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<AddPaymentDialogComponent>);
   private readonly adminOutletsApi = inject(AdminOutletsApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly statusOptions = STATUS_OPTIONS;
   readonly typeOptions = TYPE_OPTIONS;
@@ -111,6 +125,22 @@ export class AddPaymentDialogComponent {
         this.outletOptions = [];
       },
     });
+  }
+
+  onReceiptImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.receiptImage = reader.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearReceiptImage(): void {
+    this.receiptImage = '';
   }
 
   onSave(): void {

@@ -53,27 +53,44 @@ import { ChangePasswordDialogComponent } from './change-password.dialog';
   `,
   styles: [`
     .profile-popup__content {
-      min-width: 320px;
-      padding-top: 0.5rem;
+      min-width: 340px;
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 1rem 0 0.5rem 0;
+      /* Hide scrollbar */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .profile-popup__content::-webkit-scrollbar {
+      display: none;
     }
     .profile-popup__user {
       display: flex;
       align-items: flex-start;
-      gap: 1rem;
+      gap: 1.25rem;
       margin-bottom: 1.5rem;
+      padding: 1rem;
+      border-radius: 12px;
+      background: var(--mat-sys-surface-container-low, #f5f5f5);
+      border: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
     }
     .profile-popup__avatar {
       position: relative;
-      width: 72px;
-      height: 72px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
-      background: var(--mat-sys-surface-container-high);
+      background: var(--mat-sys-surface-container-high, #e8e8e8);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       overflow: hidden;
       flex-shrink: 0;
+      border: 2px solid var(--mat-sys-outline-variant, #e0e0e0);
+      transition: box-shadow 0.2s ease;
+    }
+    .profile-popup__avatar:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
     .profile-popup__avatar img {
       width: 100%;
@@ -91,36 +108,44 @@ import { ChangePasswordDialogComponent } from './change-password.dialog';
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.6);
       color: #fff;
       font-size: 0.7rem;
       text-align: center;
-      padding: 2px 0;
+      padding: 4px 0;
     }
     .profile-popup__details {
       flex: 1;
       min-width: 0;
     }
     .profile-popup__name {
-      font-size: 1.125rem;
+      font-size: 1.25rem;
       font-weight: 600;
-      margin: 0 0 0.25rem 0;
+      margin: 0 0 0.5rem 0;
+      color: var(--mat-sys-on-surface);
     }
     .profile-popup__meta {
       font-size: 0.875rem;
       color: var(--mat-sys-on-surface-variant);
-      margin: 0.125rem 0;
+      margin: 0.25rem 0;
+      line-height: 1.4;
     }
     .profile-popup__actions {
       display: flex;
       flex-direction: column;
+      padding: 30px;
       gap: 0.5rem;
     }
     .profile-popup__btn {
       justify-content: flex-start;
+      border-radius: 8px;
     }
     .profile-popup__btn .mat-icon {
       margin-right: 0.5rem;
+    }
+    mat-dialog-actions {
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
     }
   `],
 })

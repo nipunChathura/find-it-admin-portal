@@ -174,3 +174,9 @@ html {
   font-weight: 600;
   color: var(--mat-sys-primary);
 }
+
+/* Dialog content – consistent padding */
+.mat-mdc-dialog-container .mat-mdc-dialog-title + .mat-mdc-dialog-content {
+  padding-top: 0;
+  padding: 10px;
+}

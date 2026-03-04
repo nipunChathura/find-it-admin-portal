@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -167,6 +167,7 @@ const PARENT_SEARCH_RESULT_LIMIT = 5;
 export class AddMerchantDialogComponent implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<AddMerchantDialogComponent>);
   private readonly merchantsApi = inject(AdminMerchantsApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
   private readonly parentSearchTerm$ = new Subject<string>();
 
@@ -240,6 +241,7 @@ export class AddMerchantDialogComponent implements OnInit, OnDestroy {
     const reader = new FileReader();
     reader.onload = () => {
       this.merchantProfileImage = reader.result as string;
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
   }
