@@ -10,14 +10,27 @@
   </mat-form-field>
   <mat-form-field appearance="outline" class="add-item-dialog__field">
     <mat-label>Category</mat-label>
-    <mat-select [(ngModel)]="categoryId" name="categoryId" required>
-      @for (opt of categoryOptions; track opt.id) {
-        <mat-option [value]="opt.id">{{ opt.name }}</mat-option>
+    <input
+      matInput
+      [(ngModel)]="categorySearchText"
+      name="categorySearch"
+      placeholder="Search category..."
+      [matAutocomplete]="categoryAuto"
+      (ngModelChange)="onCategorySearchChange($event)"
+    />
+    <mat-autocomplete
+      #categoryAuto="matAutocomplete"
+      (optionSelected)="onCategorySelected($event.option.value)"
+    >
+      @for (cat of categorySearchResults$ | async; track cat.id) {
+        <mat-option [value]="cat">{{ cat.name }}</mat-option>
       }
       @empty {
-        <mat-option disabled>No categories</mat-option>
+        @if (categorySearchText.trim()) {
+          <mat-option disabled>No categories found</mat-option>
+        }
       }
-    </mat-select>
+    </mat-autocomplete>
   </mat-form-field>
   <mat-form-field appearance="outline" class="add-item-dialog__field">
     <mat-label>Outlet</mat-label>

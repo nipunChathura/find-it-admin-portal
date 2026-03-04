@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -8,7 +8,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { AdminCategoriesApiService } from '../../../core/api/admin-categories.api';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { Subject, Observable, of } from 'rxjs';
+import { debounceTime, switchMap, map, takeUntil } from 'rxjs/operators';
+import { AdminCategoriesApiService, CategoryRow } from '../../../core/api/admin-categories.api';
 import { AdminOutletsApiService } from '../../../core/api/admin-outlets.api';
 
 export interface AddItemDialogData {
@@ -32,6 +35,8 @@ const STATUS_OPTIONS = [
   { value: 'PENDING', label: 'PENDING' },
 ];
 
+const CATEGORY_SEARCH_LIMIT = 10;
+
 @Component({
   selector: 'app-add-item-dialog',
   standalone: true,
@@ -42,6 +47,7 @@ const STATUS_OPTIONS = [
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatAutocompleteModule,
     MatButtonModule,
     MatIconModule,
     MatCheckboxModule,
@@ -60,14 +66,17 @@ const STATUS_OPTIONS = [
     '.dialog-cancel-btn { color: #c62828; }',
   ],
 })
-export class AddItemDialogComponent {
+export class AddItemDialogComponent implements OnInit, OnDestroy {
   readonly data: AddItemDialogData = inject(MAT_DIALOG_DATA, { optional: true }) ?? {};
   private readonly dialogRef = inject(MatDialogRef<AddItemDialogComponent>);
   private readonly adminCategoriesApi = inject(AdminCategoriesApiService);
   private readonly adminOutletsApi = inject(AdminOutletsApiService);
+  private readonly categorySearchTerm$ = new Subject<string>();
+  private readonly destroy$ = new Subject<void>();
 
   readonly statusOptions = STATUS_OPTIONS;
-  categoryOptions: { id: number; name: string }[] = [];
+  categorySearchResults$!: Observable<CategoryRow[]>;
+  categorySearchText = '';
   outletOptions: { outletId: number; outletName: string }[] = [];
 
   itemName = '';
@@ -80,14 +89,6 @@ export class AddItemDialogComponent {
   status = 'ACTIVE';
 
   constructor() {
-    this.adminCategoriesApi.getCategories({}).subscribe({
-      next: (rows) => {
-        this.categoryOptions = rows.map((r) => ({ id: r.id, name: r.name }));
-      },
-      error: () => {
-        this.categoryOptions = [];
-      },
-    });
     this.adminOutletsApi.getOutlets({ search: '', status: '', outletType: '' }).subscribe({
       next: (rows) => {
         this.outletOptions = rows.map((r) => ({ outletId: r.row.outletId, outletName: r.row.outletName }));
@@ -96,6 +97,34 @@ export class AddItemDialogComponent {
         this.outletOptions = [];
       },
     });
+  }
+
+  ngOnInit(): void {
+    this.categorySearchResults$ = this.categorySearchTerm$.pipe(
+      debounceTime(250),
+      switchMap((q) => {
+        const term = (q ?? '').trim();
+        if (!term) return of([]);
+        return this.adminCategoriesApi.getCategories({ search: term }).pipe(
+          map((list) => list.slice(0, CATEGORY_SEARCH_LIMIT)),
+        );
+      }),
+      takeUntil(this.destroy$),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onCategorySearchChange(value: string): void {
+    this.categorySearchTerm$.next(value ?? '');
+  }
+
+  onCategorySelected(cat: CategoryRow): void {
+    this.categoryId = cat.id;
+    this.categorySearchText = cat.name ?? '';
   }
 
   onImageSelected(event: Event): void {

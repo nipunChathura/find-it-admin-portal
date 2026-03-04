@@ -141,6 +141,24 @@
   button {
     margin-left: 0.25rem;
   }
+
+  .schedule-page__btn-edit {
+    color: #1976d2;
+
+    &:hover {
+      background-color: rgba(25, 118, 210, 0.08);
+      color: #1565c0;
+    }
+  }
+
+  .schedule-page__btn-remove {
+    color: #c62828;
+
+    &:hover {
+      background-color: rgba(198, 40, 40, 0.08);
+      color: #b71c1c;
+    }
+  }
 }
 
 .schedule-page__no-data td {

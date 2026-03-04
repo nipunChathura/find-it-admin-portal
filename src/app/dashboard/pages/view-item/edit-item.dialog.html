@@ -21,7 +21,7 @@
         <mat-option [value]="cat">{{ cat.name }}</mat-option>
       }
       @empty {
-        @if (categorySearchText?.trim()) {
+        @if (categorySearchText.trim()) {
           <mat-option disabled>No categories found</mat-option>
         }
       }

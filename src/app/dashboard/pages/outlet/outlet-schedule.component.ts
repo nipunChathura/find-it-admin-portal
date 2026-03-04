@@ -1,5 +1,7 @@
 import { Component, Injector, OnInit } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
+import { from } from 'rxjs';
+import { concatMap, toArray } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -122,12 +124,12 @@ function entryToUpdatePayload(entry: OutletScheduleEntry, row: OutletScheduleRow
 })
 export class OutletScheduleComponent implements OnInit {
   readonly displayedColumns: string[] = [
+    'actions',
     'dayOrDate',
     'openTime',
     'closeTime',
     'isClosed',
     'reason',
-    'actions',
   ];
   readonly dayOfWeekFilterOptions = [
     { value: '', label: 'All days' },
@@ -266,18 +268,37 @@ export class OutletScheduleComponent implements OnInit {
       data: { outletId, entry: null },
       injector: this.injector,
     });
-    ref.afterClosed().subscribe((entry: OutletScheduleEntry | undefined) => {
-      if (!entry) return;
-      const payload = entryToCreatePayload(entry);
-      this.schedulesApi.createSchedule(outletId, payload).subscribe({
-        next: () => {
-          this.snackbar.showSuccess('Schedule added successfully.');
-          this.loadSchedules();
-        },
-        error: () => {
-          this.snackbar.showError('Failed to add schedule.');
-        },
-      });
+    ref.afterClosed().subscribe((result: OutletScheduleEntry | { multiple: true; entries: OutletScheduleEntry[] } | undefined) => {
+      if (!result) return;
+      if ('multiple' in result && result.multiple && result.entries?.length) {
+        from(result.entries)
+          .pipe(
+            concatMap((entry) => this.schedulesApi.createSchedule(outletId, entryToCreatePayload(entry))),
+            toArray(),
+          )
+          .subscribe({
+            next: () => {
+              this.snackbar.showSuccess('Schedules added successfully.');
+              this.loadSchedules();
+            },
+            error: () => {
+              this.snackbar.showError('Failed to add one or more schedules.');
+              this.loadSchedules();
+            },
+          });
+      } else {
+        const entry = result as OutletScheduleEntry;
+        const payload = entryToCreatePayload(entry);
+        this.schedulesApi.createSchedule(outletId, payload).subscribe({
+          next: () => {
+            this.snackbar.showSuccess('Schedule added successfully.');
+            this.loadSchedules();
+          },
+          error: () => {
+            this.snackbar.showError('Failed to add schedule.');
+          },
+        });
+      }
     });
   }
 

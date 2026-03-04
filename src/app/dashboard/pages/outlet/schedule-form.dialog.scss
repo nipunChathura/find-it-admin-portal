@@ -10,6 +10,30 @@
   margin-bottom: 0.5rem;
 }
 
+.schedule-form-dialog__time-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.schedule-form-dialog__time-label {
+  min-width: 72px;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-surface-variant, #49454f);
+}
+
+.schedule-form-dialog__time-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.schedule-form-dialog__time-error {
+  font-size: 0.75rem;
+  color: var(--mat-sys-error, #b3261e);
+  margin: -0.25rem 0 0.5rem 0;
+}
+
 .schedule-form-dialog__checkbox {
   margin-bottom: 1rem;
 }
