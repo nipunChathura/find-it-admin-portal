@@ -24,7 +24,7 @@ const STATUS_OPTIONS = [
 
 const DISCOUNT_TYPE_OPTIONS = [
   { value: 'PERCENTAGE', label: 'PERCENTAGE' },
-  { value: 'FIXED', label: 'FIXED' },
+  { value: 'FIXED_AMOUNT', label: 'FIXED_AMOUNT' },
 ];
 
 @Component({
@@ -172,7 +172,7 @@ export class EditDiscountDialogComponent {
   constructor() {
     const d = this.data.discount;
     this.discountName = d.discountName ?? '';
-    this.discountType = d.discountType ?? 'PERCENTAGE';
+    this.discountType = (d.discountType === 'FIXED' ? 'FIXED_AMOUNT' : d.discountType) ?? 'PERCENTAGE';
     this.discountValue = d.discountValue ?? 0;
     const startStr = d.startDate ?? '';
     const endStr = d.endDate ?? '';

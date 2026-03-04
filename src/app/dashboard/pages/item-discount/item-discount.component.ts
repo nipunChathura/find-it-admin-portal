@@ -187,7 +187,7 @@ export class ItemDiscountComponent implements AfterViewInit {
   openDetailDialog(row: DiscountRow): void {
     this.selectedRow = row;
     this.dialog.open(DiscountDetailDialogComponent, {
-      width: '440px',
+      width: '520px',
       data: { discount: row },
     });
   }

@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -22,7 +22,7 @@ const STATUS_OPTIONS = [
 
 const DISCOUNT_TYPE_OPTIONS = [
   { value: 'PERCENTAGE', label: 'PERCENTAGE' },
-  { value: 'FIXED', label: 'FIXED' },
+  { value: 'FIXED_AMOUNT', label: 'FIXED_AMOUNT' },
 ];
 
 @Component({
@@ -184,6 +184,8 @@ const DISCOUNT_TYPE_OPTIONS = [
   `],
 })
 export class AddDiscountDialogComponent {
+  @ViewChild('addImageInput') addImageInputRef?: ElementRef<HTMLInputElement>;
+
   private readonly dialogRef = inject(MatDialogRef<AddDiscountDialogComponent>);
   private readonly adminItemsApi = inject(AdminItemsApiService);
   private readonly adminOutletsApi = inject(AdminOutletsApiService);
@@ -306,6 +308,14 @@ export class AddDiscountDialogComponent {
 
   onSave(): void {
     if (this.saving) return;
+    let fileToUpload: File | null = this.selectedDiscountFile;
+    if (!fileToUpload && this.addImageInputRef?.nativeElement?.files?.length) {
+      const f = this.addImageInputRef.nativeElement.files[0];
+      if (f?.type?.startsWith('image/')) {
+        fileToUpload = f;
+        this.selectedDiscountFile = f;
+      }
+    }
     const startDate = this.startDateModel ? formatDate(this.startDateModel, 'yyyy-MM-dd', 'en') : '';
     const endDate = this.endDateModel ? formatDate(this.endDateModel, 'yyyy-MM-dd', 'en') : '';
     const buildBody = (discountImageValue: string | null) => ({
@@ -318,18 +328,28 @@ export class AddDiscountDialogComponent {
       itemIds: this.itemIds ?? [],
       discountImage: discountImageValue,
     });
-    if (this.selectedDiscountFile) {
+    if (fileToUpload) {
       this.saving = true;
-      this.imagesUploadApi.upload(this.selectedDiscountFile, 'discount').subscribe({
+      this.imagesUploadApi.upload(fileToUpload, 'discount').subscribe({
         next: (res) => {
           this.saving = false;
-          const imageValue = res?.relativePath || res?.fileName || null;
+          const raw = res && typeof res === 'object' ? (res as unknown as Record<string, unknown>) : {};
+          const data = raw['data'] && typeof raw['data'] === 'object' ? (raw['data'] as Record<string, unknown>) : raw;
+          const imageValue =
+            (data['relativePath'] != null && String(data['relativePath']).trim()) ||
+            (data['fileName'] != null && String(data['fileName']).trim()) ||
+            (raw['relativePath'] != null && String(raw['relativePath']).trim()) ||
+            (raw['fileName'] != null && String(raw['fileName']).trim()) ||
+            (data['name'] != null && String(data['name']).trim()) ||
+            (data['path'] != null && String(data['path']).trim()) ||
+            null;
           this.dialogRef.close(buildBody(imageValue));
         },
         error: () => { this.saving = false; },
       });
     } else {
-      this.dialogRef.close(buildBody(this.discountImage || null));
+      const imageVal = this.discountImage?.startsWith('data:') ? null : (this.discountImage || null);
+      this.dialogRef.close(buildBody(imageVal));
     }
   }
 }

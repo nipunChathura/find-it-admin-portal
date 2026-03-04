@@ -1,12 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { ImageUploadResponse, ImagesUploadApiService, IMAGES_BASE_URL } from '../core/api/images-upload.api';
+import { ImageUploadResponse, ImagesUploadApiService } from '../core/api/images-upload.api';
+import { AuthService } from '../core/auth/auth.service';
 
 export interface ChangeProfileImageDialogData {
   currentUrl?: string | null;
@@ -17,25 +17,21 @@ export interface ChangeProfileImageDialogData {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatButtonModule,
   ],
   template: `
     <h2 mat-dialog-title>Change profile image</h2>
     <mat-dialog-content>
       <div class="browse-row">
-        <button mat-stroked-button type="button" (click)="fileInput.click()" class="browse-btn">
+        <button mat-stroked-button type="button" (click)="fileInput.click()" class="browse-btn" [disabled]="saving">
           Browse from computer
         </button>
         <input #fileInput type="file" accept="image/*" class="file-input" (change)="onFileSelected($event)" />
+        @if (imageUrl) {
+          <button mat-stroked-button type="button" (click)="removeSelection()" class="remove-btn" [disabled]="saving">Remove</button>
+        }
       </div>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Or enter image URL</mat-label>
-        <input matInput [(ngModel)]="imageUrl" name="imageUrl" placeholder="https://..." />
-      </mat-form-field>
       @if (imageUrl) {
         <div class="preview">
           <img [src]="imageUrl" alt="Preview" (error)="previewError = true" (load)="previewError = false" />
@@ -50,19 +46,18 @@ export interface ChangeProfileImageDialogData {
     }
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close type="button" [disabled]="saving">Cancel</button>
-      <button mat-button (click)="clear()" type="button" [disabled]="saving">Remove image</button>
-      <button mat-raised-button color="primary" (click)="save()" type="button" [disabled]="saving">
+      <button mat-raised-button color="primary" (click)="save()" type="button" [disabled]="saving || !selectedFile">
         {{ saving ? 'Uploading...' : 'Save' }}
       </button>
     </mat-dialog-actions>
   `,
   styles: [`
-    .full-width { width: 100%; }
-    .browse-row { margin-bottom: 1rem; }
-    .browse-btn { width: 100%; }
+    .browse-row { margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .browse-btn { flex: 1; min-width: 140px; }
+    .remove-btn { }
     .file-input { display: none; }
     .preview { margin-top: 1rem; text-align: center; }
-    .preview img { max-width: 120px; max-height: 120px; border-radius: 50%; object-fit: cover; }
+    .preview img { max-width: 160px; max-height: 160px; border-radius: 50%; object-fit: cover; }
     .preview-error { color: var(--mat-sys-error); font-size: 0.875rem; }
     .change-profile-image__error { color: var(--mat-sys-error); font-size: 0.875rem; margin: 0.5rem 0 0 0; }
   `],
@@ -71,6 +66,8 @@ export class ChangeProfileImageDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<ChangeProfileImageDialogComponent>);
   private readonly data = inject<ChangeProfileImageDialogData>(MAT_DIALOG_DATA, { optional: true });
   private readonly imagesUploadApi = inject(ImagesUploadApiService);
+  private readonly auth = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   imageUrl = this.data?.currentUrl ?? '';
   previewError = false;
@@ -89,17 +86,17 @@ export class ChangeProfileImageDialogComponent {
     reader.onload = () => {
       this.imageUrl = reader.result as string;
       this.previewError = false;
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
     input.value = '';
   }
 
-  clear(): void {
-    this.imageUrl = '';
+  removeSelection(): void {
+    this.imageUrl = this.data?.currentUrl ?? '';
     this.previewError = false;
     this.selectedFile = null;
     this.errorMessage = '';
-    this.dialogRef.close(null);
   }
 
   save(): void {
@@ -108,10 +105,29 @@ export class ChangeProfileImageDialogComponent {
       this.errorMessage = '';
       this.imagesUploadApi.upload(this.selectedFile, 'profile').subscribe({
         next: (res: ImageUploadResponse) => {
-          this.saving = false;
-          const path = res?.relativePath || res?.fileName;
-          const imageValue = path ? IMAGES_BASE_URL.replace(/\/?$/, '/') + path.replace(/^\//, '') : null;
-          this.dialogRef.close(imageValue);
+          const path = res?.relativePath || res?.fileName || '';
+          const fileName = path ? (path.includes('/') ? path.split('/').pop()! : path) : '';
+          if (!fileName) {
+            this.saving = false;
+            this.errorMessage = 'Upload did not return a file name.';
+            return;
+          }
+          const userId = this.auth.user()?.userId;
+          if (userId == null) {
+            this.saving = false;
+            this.errorMessage = 'User not found. Please log in again.';
+            return;
+          }
+          this.auth.setProfileImageByFileName(userId, fileName).subscribe({
+            next: () => {
+              this.saving = false;
+              this.dialogRef.close(path ? path.trim() : null);
+            },
+            error: (err: unknown) => {
+              this.saving = false;
+              this.errorMessage = this.getErrorMessage(err);
+            },
+          });
         },
         error: (err: unknown) => {
           this.saving = false;
@@ -120,8 +136,7 @@ export class ChangeProfileImageDialogComponent {
       });
       return;
     }
-    const url = this.imageUrl?.trim() || null;
-    this.dialogRef.close(url);
+    this.dialogRef.close();
   }
 
   private getErrorMessage(err: unknown): string {

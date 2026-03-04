@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -38,11 +38,13 @@ export interface DiscountDetailDialogData {
           }
         </div>
       </div>
-      @if (data.discount.discountImage) {
-        <div class="discount-detail-dialog__image-wrap">
-          <app-api-image type="discount" [pathOrFileName]="data.discount.discountImage" alt="Discount image" imgClass="discount-detail-dialog__image" />
-        </div>
-      }
+      <div class="discount-detail-dialog__image-wrap">
+        @if (discountImagePath()) {
+          <app-api-image type="discount" [pathOrFileName]="discountImagePath()" alt="Discount image" imgClass="discount-detail-dialog__image" />
+        } @else {
+          <span class="discount-detail-dialog__no-image">No image</span>
+        }
+      </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Close</button>
@@ -51,7 +53,7 @@ export interface DiscountDetailDialogData {
   styles: [`
     .discount-detail-dialog__content {
       min-width: 360px;
-      max-width: 560px;
+      max-width: 520px;
       display: flex;
       gap: 1.5rem;
       align-items: flex-start;
@@ -62,15 +64,25 @@ export interface DiscountDetailDialogData {
     }
     .discount-detail-dialog__image-wrap {
       flex-shrink: 0;
-      width: 180px;
+      width: 175px;
+      min-height: 80px;
+      max-width: 36%;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .discount-detail-dialog__image {
+    .discount-detail-dialog__image-wrap ::ng-deep .discount-detail-dialog__image,
+    .discount-detail-dialog__image-wrap ::ng-deep .api-image__img {
+      width: 175px;
       max-width: 100%;
       max-height: 200px;
+      height: auto;
       object-fit: contain;
-      border-radius: 8px;
+      border-radius: 12px;
       border: 1px solid var(--mat-sys-outline-variant);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+      image-rendering: auto;
     }
     .discount-detail-dialog__info {
       margin-bottom: 1.25rem;
@@ -99,9 +111,23 @@ export interface DiscountDetailDialogData {
       margin: 0;
       color: var(--mat-sys-on-surface-variant);
     }
+    .discount-detail-dialog__no-image {
+      font-size: 0.875rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
   `],
 })
-export class DiscountDetailDialogComponent {
+export class DiscountDetailDialogComponent implements AfterViewInit {
   readonly data = inject<DiscountDetailDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject(MatDialogRef<DiscountDetailDialogComponent>);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  discountImagePath(): string {
+    const path = this.data?.discount?.discountImage;
+    return path != null && String(path).trim() !== '' ? String(path).trim() : '';
+  }
+
+  ngAfterViewInit(): void {
+    this.cdr.detectChanges();
+  }
 }

@@ -73,7 +73,9 @@ function mapApiDiscountToRow(d: DiscountApiItem): DiscountRow {
     discountValue: Number(d.discountValue ?? 0),
     startDate: String(d.startDate ?? ''),
     endDate: String(d.endDate ?? ''),
-    discountImage: d.discountImage != null ? String(d.discountImage) : undefined,
+    discountImage: (d.discountImage ?? (d as Record<string, unknown>)['discount_image']) != null
+      ? String(d.discountImage ?? (d as Record<string, unknown>)['discount_image'])
+      : undefined,
     outletId: d.outletId != null ? Number(d.outletId) : undefined,
     outletName: d.outletName != null ? String(d.outletName) : undefined,
     itemIds: Array.isArray(d.itemIds) ? d.itemIds : [],

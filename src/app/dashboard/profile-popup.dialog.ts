@@ -23,13 +23,12 @@ import { ApiImageComponent } from '../shared/api-image/api-image.component';
     <h2 mat-dialog-title>Profile</h2>
     <mat-dialog-content class="profile-popup__content">
       <div class="profile-popup__user">
-        <div class="profile-popup__avatar" (click)="openChangeImage()">
+        <div class="profile-popup__avatar">
           @if (profileImageUrl()) {
             <app-api-image type="profile" [pathOrFileName]="profileImageUrl()" alt="Profile" />
           } @else {
             <mat-icon>account_circle</mat-icon>
           }
-          <span class="profile-popup__avatar-hint">Change</span>
         </div>
         <div class="profile-popup__details">
           <p class="profile-popup__name">{{ user()?.username }}</p>
@@ -77,7 +76,6 @@ import { ApiImageComponent } from '../shared/api-image/api-image.component';
       border: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
     }
     .profile-popup__avatar {
-      position: relative;
       width: 80px;
       height: 80px;
       border-radius: 50%;
@@ -85,14 +83,9 @@ import { ApiImageComponent } from '../shared/api-image/api-image.component';
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
       overflow: hidden;
       flex-shrink: 0;
       border: 2px solid var(--mat-sys-outline-variant, #e0e0e0);
-      transition: box-shadow 0.2s ease;
-    }
-    .profile-popup__avatar:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
     .profile-popup__avatar img {
       width: 100%;
@@ -104,17 +97,6 @@ import { ApiImageComponent } from '../shared/api-image/api-image.component';
       width: 48px;
       height: 48px;
       color: var(--mat-sys-on-surface-variant);
-    }
-    .profile-popup__avatar-hint {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.6);
-      color: #fff;
-      font-size: 0.7rem;
-      text-align: center;
-      padding: 4px 0;
     }
     .profile-popup__details {
       flex: 1;
@@ -158,7 +140,7 @@ export class ProfilePopupDialogComponent {
 
   readonly user = this.auth.user;
 
-  /** Profile image URL from sessionStorage (key: findit_profile_image). */
+  /** Profile image file name in state; app-api-image calls image show API when dialog loads. */
   profileImageUrl = this.auth.profileImageUrl;
 
   openChangeImage(): void {

@@ -1,5 +1,6 @@
-import { Component, Input, OnChanges, OnDestroy, SimpleChanges, inject } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { timeout, catchError, of } from 'rxjs';
 import { ImagesUploadApiService } from '../../core/api/images-upload.api';
 
 /**
@@ -32,8 +33,9 @@ import { ImagesUploadApiService } from '../../core/api/images-upload.api';
     .api-image__img { max-width: 100%; height: auto; object-fit: contain; display: block; }
   `],
 })
-export class ApiImageComponent implements OnChanges, OnDestroy {
+export class ApiImageComponent implements OnInit, OnChanges, OnDestroy {
   private readonly imagesUploadApi = inject(ImagesUploadApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @Input() type: string = 'profile';
   @Input() pathOrFileName: string | null | undefined = '';
@@ -44,6 +46,10 @@ export class ApiImageComponent implements OnChanges, OnDestroy {
   loading = false;
   error = false;
   private objectUrl: string | null = null;
+
+  ngOnInit(): void {
+    this.loadImage();
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['pathOrFileName'] || changes['type']) {
@@ -65,7 +71,26 @@ export class ApiImageComponent implements OnChanges, OnDestroy {
 
   private getFileName(pathOrFileName: string): string {
     const s = (pathOrFileName || '').trim();
-    return s.includes('/') ? s.split('/').pop()! : s;
+    if (!s) return '';
+    const parts = s.replace(/\\/g, '/').split('/').filter(Boolean);
+    return parts.length ? parts[parts.length - 1]! : s;
+  }
+
+  /** For profile: extract fileName from our image URL so we always use authenticated getImageShow. */
+  private getFileNameFromProfileUrl(url: string): string {
+    try {
+      const u = new URL(url);
+      const fileName = u.searchParams.get('fileName');
+      if (fileName?.trim()) return fileName.trim();
+      const path = u.pathname || '';
+      const segments = path.split('/').filter(Boolean);
+      const profileIdx = segments.indexOf('profile');
+      if (profileIdx >= 0 && profileIdx < segments.length - 1) return segments[segments.length - 1];
+      if (segments.length) return segments[segments.length - 1];
+    } catch {
+      // ignore
+    }
+    return '';
   }
 
   private loadImage(): void {
@@ -74,27 +99,46 @@ export class ApiImageComponent implements OnChanges, OnDestroy {
     this.error = false;
     const raw = (this.pathOrFileName || '').trim();
     if (!raw) return;
-    if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+    if (raw.startsWith('data:')) {
       this.imageUrl = raw;
       return;
     }
-    const fileName = this.getFileName(raw);
-    if (!fileName) return;
+    let fileNameOnly = '';
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      if (this.type === 'profile') {
+        fileNameOnly = this.getFileNameFromProfileUrl(raw) || this.getFileName(raw);
+        if (!fileNameOnly) return;
+      } else {
+        this.imageUrl = raw;
+        return;
+      }
+    } else {
+      fileNameOnly = this.getFileName(raw);
+    }
+    if (!fileNameOnly) return;
     this.loading = true;
-    this.imagesUploadApi.getImageShow(this.type, fileName).subscribe({
-      next: (blob: Blob) => {
-        this.loading = false;
-        if (blob && blob.size > 0) {
-          this.objectUrl = URL.createObjectURL(blob);
-          this.imageUrl = this.objectUrl;
-        } else {
+    this.imagesUploadApi
+      .getImageShow(this.type, fileNameOnly)
+      .pipe(
+        timeout(12000),
+        catchError(() => of(new Blob())),
+      )
+      .subscribe({
+        next: (blob: Blob) => {
+          this.loading = false;
+          if (blob && blob.size > 0) {
+            this.objectUrl = URL.createObjectURL(blob);
+            this.imageUrl = this.objectUrl;
+          } else {
+            this.error = true;
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.loading = false;
           this.error = true;
-        }
-      },
-      error: () => {
-        this.loading = false;
-        this.error = true;
-      },
-    });
+          this.cdr.detectChanges();
+        },
+      });
   }
 }
