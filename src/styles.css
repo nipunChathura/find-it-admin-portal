@@ -175,8 +175,82 @@ html {
   color: var(--mat-sys-primary);
 }
 
-/* Dialog content – consistent padding */
+/* ===== All popups: use same style, color and theme as main page ===== */
+/* Dialog container – same surface and card look as main .content area */
+.mat-mdc-dialog-container .mat-mdc-dialog-surface {
+  background: var(--mat-sys-surface) !important;
+  color: var(--mat-sys-on-surface);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Dialog header – theme primary (same as main page titles) */
+.mat-mdc-dialog-container .mat-mdc-dialog-title,
+.mat-mdc-dialog-container [mat-dialog-title],
+.mat-mdc-dialog-container h2[mat-dialog-title] {
+  background: var(--mat-sys-primary) !important;
+  color: var(--mat-sys-on-primary, #fff) !important;
+  padding: 16px 24px 16px 25px !important;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+.mat-mdc-dialog-container .mat-mdc-dialog-title .mat-mdc-dialog-title,
+.mat-mdc-dialog-container .mat-mdc-dialog-title .mdc-dialog__title {
+  color: var(--mat-sys-on-primary, #fff) !important;
+}
+
+/* Dialog content – same background and text as main page */
+.mat-mdc-dialog-container .mat-mdc-dialog-content {
+  margin-top: 10px;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  padding: 10px 24px 20px;
+  overflow-x: hidden; /* Prevent horizontal scrolling in popups */
+  /* Keep scrolling but hide scrollbars inside popup content */
+  scrollbar-width: none; /* Firefox */
+}
+.mat-mdc-dialog-container .mat-mdc-dialog-content::-webkit-scrollbar {
+  display: none; /* Chrome, Edge, Safari */
+}
 .mat-mdc-dialog-container .mat-mdc-dialog-title + .mat-mdc-dialog-content {
-  padding-top: 0;
-  padding: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Form fields and labels inside dialogs – theme colors */
+.mat-mdc-dialog-container .mat-mdc-form-field .mat-mdc-form-field-label,
+.mat-mdc-dialog-container .mat-mdc-floating-label {
+  color: var(--mat-sys-on-surface-variant);
+}
+.mat-mdc-dialog-container .mat-mdc-dialog-content .mat-mdc-form-field {
+  font-family: inherit;
+}
+
+/* Save / Update / Add button – theme primary (same as main page primary buttons) */
+.mat-mdc-dialog-container .mat-mdc-dialog-actions button.mat-primary,
+.mat-mdc-dialog-container .mat-mdc-dialog-actions .mat-mdc-raised-button.mat-primary {
+  background-color: var(--mat-sys-primary) !important;
+  color: var(--mat-sys-on-primary, #fff) !important;
+}
+.mat-mdc-dialog-container .mat-mdc-dialog-actions button.mat-primary .mat-icon,
+.mat-mdc-dialog-container .mat-mdc-dialog-actions .mat-mdc-raised-button.mat-primary .mat-icon {
+  color: var(--mat-sys-on-primary, #fff) !important;
+  fill: var(--mat-sys-on-primary, #fff) !important;
+}
+
+/* Cancel button – theme error (consistent with main page error/cancel style) */
+.mat-mdc-dialog-container .mat-mdc-dialog-actions .dialog-cancel-btn {
+  background-color: var(--mat-sys-error, #d32f2f) !important;
+  color: var(--mat-sys-on-error, #fff) !important;
+}
+.mat-mdc-dialog-container .mat-mdc-dialog-actions .dialog-cancel-btn .mat-icon {
+  color: var(--mat-sys-on-error, #fff) !important;
+  fill: var(--mat-sys-on-error, #fff) !important;
+}
+
+/* Dialog actions bar – align with main page spacing */
+.mat-mdc-dialog-container .mat-mdc-dialog-actions {
+  padding: 12px 24px 20px;
+  background: var(--mat-sys-surface);
+  border-top: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
 }

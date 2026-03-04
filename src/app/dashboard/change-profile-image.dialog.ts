@@ -6,7 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { AuthService } from '../core/auth/auth.service';
+import { ImageUploadResponse, ImagesUploadApiService, IMAGES_BASE_URL } from '../core/api/images-upload.api';
 
 export interface ChangeProfileImageDialogData {
   currentUrl?: string | null;
@@ -70,7 +70,7 @@ export interface ChangeProfileImageDialogData {
 export class ChangeProfileImageDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<ChangeProfileImageDialogComponent>);
   private readonly data = inject<ChangeProfileImageDialogData>(MAT_DIALOG_DATA, { optional: true });
-  private readonly auth = inject(AuthService);
+  private readonly imagesUploadApi = inject(ImagesUploadApiService);
 
   imageUrl = this.data?.currentUrl ?? '';
   previewError = false;
@@ -106,10 +106,12 @@ export class ChangeProfileImageDialogComponent {
     if (this.selectedFile) {
       this.saving = true;
       this.errorMessage = '';
-      this.auth.updateProfileImage(this.selectedFile).subscribe({
-        next: () => {
+      this.imagesUploadApi.upload(this.selectedFile, 'profile').subscribe({
+        next: (res: ImageUploadResponse) => {
           this.saving = false;
-          this.dialogRef.close(this.imageUrl || null);
+          const path = res?.relativePath || res?.fileName;
+          const imageValue = path ? IMAGES_BASE_URL.replace(/\/?$/, '/') + path.replace(/^\//, '') : null;
+          this.dialogRef.close(imageValue);
         },
         error: (err: unknown) => {
           this.saving = false;

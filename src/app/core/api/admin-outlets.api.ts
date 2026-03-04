@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { Observable, map, of, catchError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 
 const ADMIN_OUTLETS_URL = 'http://localhost:9090/find-it/api/admin/outlets';
@@ -118,9 +118,27 @@ export class AdminOutletsApiService {
   ) {}
 
   /**
+   * Normalize API response to outlet list (array of OutletTableItem).
+   */
+  private normalizeOutletsResponse(
+    body: OutletApiItem[] | GetOutletsApiResponse | { content?: OutletApiItem[]; data?: OutletApiItem[] } | unknown
+  ): OutletTableItem[] {
+    const list = Array.isArray(body)
+      ? body
+      : (body as GetOutletsApiResponse).outlets ??
+        (body as { content?: OutletApiItem[] }).content ??
+        (body as { data?: OutletApiItem[] }).data ??
+        [];
+    return (list as OutletApiItem[]).map((item) => ({
+      row: mapApiItemToRow(item),
+      raw: item,
+    }));
+  }
+
+  /**
    * GET all outlets with optional filters.
+   * Tries ADMIN_OUTLETS_URL first; on failure tries GET /find-it/api/outlets.
    * Query params: search, status, outletType.
-   * Uses Bearer token from AuthService.
    */
   getOutlets(params: {
     status?: string;
@@ -153,18 +171,16 @@ export class AdminOutletsApiService {
         headers,
       })
       .pipe(
-        map((body) => {
-          const list = Array.isArray(body)
-            ? body
-            : (body as GetOutletsApiResponse).outlets ??
-              (body as { content?: OutletApiItem[] }).content ??
-              (body as { data?: OutletApiItem[] }).data ??
-              [];
-          return (list as OutletApiItem[]).map((item) => ({
-            row: mapApiItemToRow(item),
-            raw: item,
-          }));
-        }),
+        map((body) => this.normalizeOutletsResponse(body)),
+        catchError(() =>
+          this.http.get<OutletApiItem[] | GetOutletsApiResponse>(CREATE_OUTLETS_URL, {
+            params: httpParams,
+            headers,
+          }).pipe(
+            map((body) => this.normalizeOutletsResponse(body)),
+            catchError(() => of([])),
+          )
+        ),
       );
   }
 

@@ -7,6 +7,7 @@ import { AuthService } from '../core/auth/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ChangeProfileImageDialogComponent } from './change-profile-image.dialog';
 import { ChangePasswordDialogComponent } from './change-password.dialog';
+import { ApiImageComponent } from '../shared/api-image/api-image.component';
 
 @Component({
   selector: 'app-profile-popup-dialog',
@@ -16,6 +17,7 @@ import { ChangePasswordDialogComponent } from './change-password.dialog';
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
+    ApiImageComponent,
   ],
   template: `
     <h2 mat-dialog-title>Profile</h2>
@@ -23,7 +25,7 @@ import { ChangePasswordDialogComponent } from './change-password.dialog';
       <div class="profile-popup__user">
         <div class="profile-popup__avatar" (click)="openChangeImage()">
           @if (profileImageUrl()) {
-            <img [src]="profileImageUrl()" alt="Profile" />
+            <app-api-image type="profile" [pathOrFileName]="profileImageUrl()" alt="Profile" />
           } @else {
             <mat-icon>account_circle</mat-icon>
           }

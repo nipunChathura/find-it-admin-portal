@@ -5,6 +5,8 @@ import { AuthService } from '../auth/auth.service';
 import { Notification, NotificationApiItem } from './notification.model';
 
 const NOTIFICATIONS_URL = 'http://localhost:9090/find-it/api/notifications';
+/** Notifications page: GET all for user – e.g. http://localhost:8080/api/notifications/user/{userId} */
+const NOTIFICATIONS_PAGE_API = 'http://localhost:8080/api';
 const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 function mapApiItemToNotification(item: NotificationApiItem): Notification {
@@ -51,7 +53,7 @@ export class NotificationService implements OnDestroy {
     this.stopPolling();
   }
 
-  /** Fetch notifications from REST API: GET .../notifications/unread/{userId} */
+  /** Fetch unread only: GET .../notifications/unread/{userId} (for dropdown/badge). */
   fetchNotifications(): Observable<Notification[]> {
     const token = this.auth.token();
     const userId = this.auth.user()?.userId;
@@ -74,17 +76,43 @@ export class NotificationService implements OnDestroy {
       );
   }
 
+  /** Fetch all notifications for Notifications page: GET .../api/notifications/user/{userId}. */
+  fetchAllNotifications(): Observable<Notification[]> {
+    const token = this.auth.token();
+    const userId = this.auth.user()?.userId;
+    if (!token || userId == null) {
+      return of([]);
+    }
+    const url = `${NOTIFICATIONS_PAGE_API}/notifications/user/${userId}`;
+    const headers = {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+    };
+    return this.http
+      .get<NotificationApiItem[] | { content?: NotificationApiItem[]; data?: NotificationApiItem[] }>(
+        url,
+        { headers }
+      )
+      .pipe(
+        map((body) => {
+          const raw = Array.isArray(body) ? body : (body?.content ?? body?.data ?? []);
+          return (raw as NotificationApiItem[]).map(mapApiItemToNotification);
+        }),
+        catchError(() => of([]))
+      );
+  }
+
   /** Load and push latest notifications (used by polling and manual refresh). */
   load(): void {
     this.fetchNotifications().subscribe((list) => this.notifications$.next(list));
   }
 
-  /** Mark a single notification as read. */
+  /** Mark a single notification as read. POST .../notifications/read/{id} */
   markAsRead(id: string): Observable<unknown> {
     const token = this.auth.token();
     if (!token) return of(null);
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-    return this.http.patch(`${NOTIFICATIONS_URL}/${id}/read`, {}, { headers }).pipe(
+    return this.http.post(`${NOTIFICATIONS_URL}/read/${id}`, {}, { headers }).pipe(
       tap(() => this.updateOne(id, (n) => ({ ...n, isRead: true }))),
       catchError(() => of(null))
     );

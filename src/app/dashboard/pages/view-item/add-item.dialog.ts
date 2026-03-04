@@ -13,6 +13,7 @@ import { Subject, Observable, of } from 'rxjs';
 import { debounceTime, switchMap, map, takeUntil } from 'rxjs/operators';
 import { AdminCategoriesApiService, CategoryRow } from '../../../core/api/admin-categories.api';
 import { AdminOutletsApiService } from '../../../core/api/admin-outlets.api';
+import { ImagesUploadApiService } from '../../../core/api/images-upload.api';
 
 export interface AddItemDialogData {
   // No extra data required for add
@@ -58,7 +59,7 @@ const CATEGORY_SEARCH_LIMIT = 10;
     '.add-item-dialog__field { width: 100%; display: block; margin-bottom: 0.5rem; }',
     '.add-item-dialog__image-wrap { margin-top: 0.5rem; }',
     '.add-item-dialog__image-label { display: block; font-size: 0.75rem; color: var(--mat-sys-on-surface-variant); margin-bottom: 0.25rem; }',
-    '.add-item-dialog__file-input { font-size: 0.875rem; }',
+    '.add-item-dialog__file-input { display: none; }',
     '.add-item-dialog__preview { margin-top: 0.5rem; }',
     '.add-item-dialog__preview-img { max-width: 160px; max-height: 120px; object-fit: contain; border-radius: 8px; border: 1px solid var(--mat-sys-outline-variant); display: block; margin-bottom: 0.25rem; }',
     'mat-dialog-actions { padding-top: 0.5rem; gap: 0.5rem; }',
@@ -71,6 +72,7 @@ export class AddItemDialogComponent implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<AddItemDialogComponent>);
   private readonly adminCategoriesApi = inject(AdminCategoriesApiService);
   private readonly adminOutletsApi = inject(AdminOutletsApiService);
+  private readonly imagesUploadApi = inject(ImagesUploadApiService);
   private readonly categorySearchTerm$ = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
@@ -86,6 +88,8 @@ export class AddItemDialogComponent implements OnInit, OnDestroy {
   price = 0;
   availability = true;
   itemImage: string | null = null;
+  selectedItemFile: File | null = null;
+  saving = false;
   status = 'ACTIVE';
 
   constructor() {
@@ -131,6 +135,7 @@ export class AddItemDialogComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
+    this.selectedItemFile = file;
     const reader = new FileReader();
     reader.onload = () => {
       this.itemImage = reader.result as string;
@@ -140,19 +145,33 @@ export class AddItemDialogComponent implements OnInit, OnDestroy {
 
   clearImage(): void {
     this.itemImage = null;
+    this.selectedItemFile = null;
   }
 
   onSave(): void {
     if (this.categoryId == null || this.outletId == null) return;
-    this.dialogRef.close({
+    const buildResult = (itemImageValue: string | null): AddItemDialogResult => ({
       itemName: this.itemName.trim(),
       itemDescription: this.itemDescription.trim(),
-      categoryId: this.categoryId,
-      outletId: this.outletId,
+      categoryId: this.categoryId!,
+      outletId: this.outletId!,
       price: Number(this.price),
       availability: this.availability,
-      itemImage: this.itemImage,
+      itemImage: itemImageValue,
       status: this.status,
-    } as AddItemDialogResult);
+    });
+    if (this.selectedItemFile) {
+      this.saving = true;
+      this.imagesUploadApi.upload(this.selectedItemFile, 'item').subscribe({
+        next: (res) => {
+          this.saving = false;
+          const imageValue = res?.relativePath || res?.fileName || null;
+          this.dialogRef.close(buildResult(imageValue));
+        },
+        error: () => { this.saving = false; },
+      });
+    } else {
+      this.dialogRef.close(buildResult(this.itemImage));
+    }
   }
 }

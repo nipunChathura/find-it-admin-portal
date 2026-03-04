@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,28 +14,35 @@ import { Notification, NotificationType } from '../../../core/notifications/noti
   templateUrl: './notifications-page.component.html',
   styleUrl: './notifications-page.component.scss',
 })
-export class NotificationsPageComponent implements OnInit, OnDestroy {
+export class NotificationsPageComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
-  private sub: { unsubscribe(): void } | null = null;
 
   readonly list = signal<Notification[]>([]);
   readonly unreadCount = computed(() => this.list().filter((n) => !n.isRead).length);
 
   ngOnInit(): void {
-    this.notificationService.load();
-    this.sub = this.notificationService.notifications.subscribe((n) => this.list.set(n));
+    this.loadAllNotifications();
   }
 
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+  /** Load all notifications (read + unread) for this page. */
+  loadAllNotifications(): void {
+    this.notificationService.fetchAllNotifications().subscribe((notifications) => {
+      this.list.set(notifications);
+    });
   }
 
   markAsRead(n: Notification): void {
-    this.notificationService.markAsRead(n.id).subscribe();
+    this.notificationService.markAsRead(n.id).subscribe(() => {
+      this.list.update((prev) =>
+        prev.map((x) => (x.id === n.id ? { ...x, isRead: true } : x))
+      );
+    });
   }
 
   markAllAsRead(): void {
-    this.notificationService.markAllAsRead().subscribe();
+    this.notificationService.markAllAsRead().subscribe(() => {
+      this.list.update((prev) => prev.map((x) => ({ ...x, isRead: true })));
+    });
   }
 
   formatTime(date: Date): string {

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -10,6 +10,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 import { DiscountRow, UpdateDiscountBody } from '../../../core/api/admin-discounts.api';
 import { AdminItemsApiService } from '../../../core/api/admin-items.api';
+import { ImagesUploadApiService } from '../../../core/api/images-upload.api';
+import { ApiImageComponent } from '../../../shared/api-image/api-image.component';
 
 export interface EditDiscountDialogData {
   discount: DiscountRow;
@@ -38,12 +40,19 @@ const DISCOUNT_TYPE_OPTIONS = [
     MatButtonModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    ApiImageComponent,
   ],
   providers: [provideNativeDateAdapter()],
   template: `
     <h2 mat-dialog-title>Edit discount</h2>
     <mat-dialog-content class="edit-discount-dialog__content">
       <p class="edit-discount-dialog__id">ID: {{ data.discount.discountId }}</p>
+      @if (data.discount.outletName) {
+        <mat-form-field appearance="outline" class="edit-discount-dialog__field edit-discount-dialog__outlet-readonly">
+          <mat-label>Outlet</mat-label>
+          <input matInput [value]="data.discount.outletName" readonly disabled />
+        </mat-form-field>
+      }
       <mat-form-field appearance="outline" class="edit-discount-dialog__field">
         <mat-label>Discount name</mat-label>
         <input matInput [(ngModel)]="discountName" name="discountName" required />
@@ -83,17 +92,24 @@ const DISCOUNT_TYPE_OPTIONS = [
       <div class="edit-discount-dialog__field edit-discount-dialog__image-wrap">
         <label class="edit-discount-dialog__image-label">Discount image</label>
         <input type="file" accept="image/*" (change)="onImageSelected($event)" class="edit-discount-dialog__file-input" #editImageInput />
-        @if (discountImage) {
+        <div class="edit-discount-dialog__preview-actions">
+          <button mat-stroked-button type="button" (click)="editImageInput.click()">{{ hasAnyImage() ? 'Change image' : 'Select image' }}</button>
+          @if (hasAnyImage()) {
+            <button mat-stroked-button type="button" (click)="removeImage()">Remove</button>
+          }
+        </div>
+        @if (selectedDiscountFile) {
+          <div class="edit-discount-dialog__preview">
+            <span class="edit-discount-dialog__preview-label">New image:</span>
+            <img [src]="discountImagePreview" alt="New discount" class="edit-discount-dialog__preview-img" />
+          </div>
+        } @else if (discountImage && !imageRemoved) {
           <div class="edit-discount-dialog__preview">
             <span class="edit-discount-dialog__preview-label">Current image:</span>
-            <img [src]="discountImage" alt="Discount image" class="edit-discount-dialog__preview-img" />
-            <div class="edit-discount-dialog__preview-actions">
-              <button mat-button type="button" (click)="editImageInput.click()">Change image</button>
-              <button mat-button type="button" (click)="clearImage()">Remove image</button>
-            </div>
+            <app-api-image type="discount" [pathOrFileName]="discountImage" alt="Discount image" imgClass="edit-discount-dialog__preview-img" />
           </div>
         } @else {
-          <p class="edit-discount-dialog__no-image">No image. Use the file input above to add one.</p>
+          <p class="edit-discount-dialog__no-image">No image. Click "Select image" to add one.</p>
         }
       </div>
       <mat-form-field appearance="outline" class="edit-discount-dialog__field">
@@ -117,18 +133,21 @@ const DISCOUNT_TYPE_OPTIONS = [
     .edit-discount-dialog__field { width: 100%; display: block; margin-bottom: 0.5rem; }
     .edit-discount-dialog__image-wrap { margin-top: 0.5rem; }
     .edit-discount-dialog__image-label { display: block; font-size: 0.75rem; color: var(--mat-sys-on-surface-variant); margin-bottom: 0.25rem; }
-    .edit-discount-dialog__file-input { font-size: 0.875rem; }
+    .edit-discount-dialog__file-input { display: none; }
     .edit-discount-dialog__preview { margin-top: 0.5rem; }
     .edit-discount-dialog__preview-label { display: block; font-size: 0.75rem; color: var(--mat-sys-on-surface-variant); margin-bottom: 0.25rem; }
     .edit-discount-dialog__preview-img { max-width: 160px; max-height: 120px; object-fit: contain; border-radius: 8px; border: 1px solid var(--mat-sys-outline-variant); display: block; margin-bottom: 0.5rem; }
     .edit-discount-dialog__preview-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .edit-discount-dialog__no-image { margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--mat-sys-on-surface-variant); }
+    .edit-discount-dialog__outlet-readonly input { cursor: default; }
   `],
 })
 export class EditDiscountDialogComponent {
   readonly data = inject<EditDiscountDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject(MatDialogRef<EditDiscountDialogComponent>);
   private readonly adminItemsApi = inject(AdminItemsApiService);
+  private readonly imagesUploadApi = inject(ImagesUploadApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly statusOptions = STATUS_OPTIONS;
   readonly discountTypeOptions = DISCOUNT_TYPE_OPTIONS;
@@ -140,7 +159,14 @@ export class EditDiscountDialogComponent {
   startDateModel: Date | null = null;
   endDateModel: Date | null = null;
   status: string;
+  /** Current image path from server (for display and for save when no change). */
   discountImage = '';
+  /** Data URL when user selects a new file (preview only). */
+  discountImagePreview = '';
+  /** True when user clicked Remove (send null on save). */
+  imageRemoved = false;
+  selectedDiscountFile: File | null = null;
+  saving = false;
   itemIds: number[] = [];
 
   constructor() {
@@ -155,29 +181,50 @@ export class EditDiscountDialogComponent {
     this.status = d.discountStatus ?? 'ACTIVE';
     this.discountImage = d.discountImage ?? '';
     this.itemIds = d.itemIds?.length ? [...d.itemIds] : (d.items?.map((i) => i.itemId) ?? []);
-    this.adminItemsApi.getItems({}).subscribe({
-      next: (rows) => {
-        this.itemOptions = rows.map((r) => ({ id: r.id, name: r.name }));
-      },
-      error: () => {
-        this.itemOptions = [];
-      },
-    });
+    const outletId = d.outletId;
+    if (outletId != null && outletId > 0) {
+      this.adminItemsApi.getItemsByOutlet(outletId).subscribe({
+        next: (rows) => {
+          this.itemOptions = rows.map((r) => ({ id: r.id, name: r.name }));
+        },
+        error: () => {
+          this.itemOptions = [];
+        },
+      });
+    } else {
+      this.adminItemsApi.getItems({}).subscribe({
+        next: (rows) => {
+          this.itemOptions = rows.map((r) => ({ id: r.id, name: r.name }));
+        },
+        error: () => {
+          this.itemOptions = [];
+        },
+      });
+    }
+  }
+
+  hasAnyImage(): boolean {
+    return (this.discountImage.trim() !== '' && !this.imageRemoved) || this.selectedDiscountFile !== null;
   }
 
   onImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
+    this.selectedDiscountFile = file;
+    this.imageRemoved = false;
     const reader = new FileReader();
     reader.onload = () => {
-      this.discountImage = reader.result as string;
+      this.discountImagePreview = reader.result as string;
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
   }
 
-  clearImage(): void {
-    this.discountImage = '';
+  removeImage(): void {
+    this.selectedDiscountFile = null;
+    this.discountImagePreview = '';
+    this.imageRemoved = true;
   }
 
   onCancel(): void {
@@ -185,9 +232,10 @@ export class EditDiscountDialogComponent {
   }
 
   onSave(): void {
+    if (this.saving) return;
     const startDate = this.startDateModel ? formatDate(this.startDateModel, 'yyyy-MM-dd', 'en') : '';
     const endDate = this.endDateModel ? formatDate(this.endDateModel, 'yyyy-MM-dd', 'en') : '';
-    const body: UpdateDiscountBody = {
+    const buildBody = (discountImageValue: string | null) => ({
       discountName: this.discountName.trim(),
       discountType: this.discountType,
       discountValue: Number(this.discountValue),
@@ -195,8 +243,21 @@ export class EditDiscountDialogComponent {
       endDate,
       status: this.status,
       itemIds: this.itemIds ?? [],
-      discountImage: this.discountImage || null,
-    };
-    this.dialogRef.close(body);
+      discountImage: discountImageValue,
+    });
+    if (this.selectedDiscountFile) {
+      this.saving = true;
+      this.imagesUploadApi.upload(this.selectedDiscountFile, 'discount').subscribe({
+        next: (res) => {
+          this.saving = false;
+          const imageValue = res?.relativePath || res?.fileName || null;
+          this.dialogRef.close(buildBody(imageValue));
+        },
+        error: () => { this.saving = false; },
+      });
+    } else {
+      const imageValue = this.imageRemoved ? null : (this.discountImage?.trim() || null);
+      this.dialogRef.close(buildBody(imageValue));
+    }
   }
 }

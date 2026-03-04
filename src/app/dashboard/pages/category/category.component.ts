@@ -80,7 +80,13 @@ export class CategoryComponent implements AfterViewInit {
     });
     dialogRef.afterClosed().subscribe((result: AddCategoryDialogResult | undefined) => {
       if (!result) return;
-      this.categoriesApi.createCategory({ name: result.name, categoryType: result.categoryType, status: result.status }).subscribe({
+      this.categoriesApi.createCategory({
+        categoryName: result.categoryName,
+        categoryDescription: result.categoryDescription ?? '',
+        categoryImage: result.categoryImage ?? null,
+        categoryType: result.categoryType,
+        status: result.status,
+      }).subscribe({
         next: () => {
           this.snackbar.showSuccess('Category added successfully.');
           this.loadCategories();
@@ -93,12 +99,25 @@ export class CategoryComponent implements AfterViewInit {
   onEdit(row: CategoryRow): void {
     const dialogRef = this.dialog.open(EditCategoryDialogComponent, {
       width: '420px',
-      data: { id: row.id, name: row.name, categoryType: row.categoryType, status: row.status, createdDate: row.createdDate },
+      data: {
+      id: row.id,
+      name: row.name,
+      categoryDescription: row.categoryDescription ?? '',
+      categoryType: row.categoryType,
+      status: row.status,
+      createdDate: row.createdDate,
+    },
       disableClose: false,
     });
     dialogRef.afterClosed().subscribe((result: EditCategoryDialogResult | undefined) => {
       if (!result) return;
-      this.categoriesApi.updateCategory(result.id, { name: result.name, categoryType: result.categoryType, status: result.status }).subscribe({
+      this.categoriesApi.updateCategory(result.id, {
+        categoryName: result.categoryName,
+        categoryDescription: result.categoryDescription ?? '',
+        categoryImage: result.categoryImage ?? null,
+        categoryType: result.categoryType,
+        status: result.status,
+      }).subscribe({
         next: () => {
           this.snackbar.showSuccess('Category updated successfully.');
           this.loadCategories();

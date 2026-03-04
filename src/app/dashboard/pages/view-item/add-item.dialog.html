@@ -52,7 +52,8 @@
   </div>
   <div class="add-item-dialog__field add-item-dialog__image-wrap">
     <label class="add-item-dialog__image-label">Item image (optional)</label>
-    <input type="file" accept="image/*" (change)="onImageSelected($event)" class="add-item-dialog__file-input" />
+    <input #itemFileInput type="file" accept="image/*" (change)="onImageSelected($event)" class="add-item-dialog__file-input" />
+    <button mat-stroked-button type="button" (click)="itemFileInput.click()">Select image</button>
     @if (itemImage) {
       <div class="add-item-dialog__preview">
         <img [src]="itemImage" alt="Item preview" class="add-item-dialog__preview-img" />
@@ -70,6 +71,6 @@
   </mat-form-field>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn">Cancel</button>
-  <button mat-raised-button color="primary" (click)="onSave()" type="button" [disabled]="!itemName.trim() || categoryId == null || outletId == null">Save</button>
+  <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn" [disabled]="saving">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()" type="button" [disabled]="!itemName.trim() || categoryId == null || outletId == null || saving">{{ saving ? 'Uploading...' : 'Save' }}</button>
 </mat-dialog-actions>

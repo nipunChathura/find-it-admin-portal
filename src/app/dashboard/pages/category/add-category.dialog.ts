@@ -10,7 +10,9 @@ import { MatButtonModule } from '@angular/material/button';
 export type CategoryType = 'ITEM' | 'SERVICE';
 
 export interface AddCategoryDialogResult {
-  name: string;
+  categoryName: string;
+  categoryDescription: string;
+  categoryImage: string | null;
   categoryType: CategoryType;
   status: string;
 }
@@ -42,7 +44,11 @@ const CATEGORY_TYPE_OPTIONS = [
     <mat-dialog-content>
       <mat-form-field appearance="outline" class="add-category-dialog__field">
         <mat-label>Category Name</mat-label>
-        <input matInput [(ngModel)]="name" name="name" required />
+        <input matInput [(ngModel)]="categoryName" name="categoryName" required />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-category-dialog__field">
+        <mat-label>Category Description</mat-label>
+        <input matInput [(ngModel)]="categoryDescription" name="categoryDescription" />
       </mat-form-field>
       <mat-form-field appearance="outline" class="add-category-dialog__field">
         <mat-label>Category Type</mat-label>
@@ -81,11 +87,19 @@ export class AddCategoryDialogComponent {
 
   readonly statusOptions = STATUS_OPTIONS;
   readonly categoryTypeOptions = CATEGORY_TYPE_OPTIONS;
-  name = '';
+  categoryName = '';
+  categoryDescription = '';
+  categoryImage: string | null = null;
   categoryType: 'ITEM' | 'SERVICE' = 'ITEM';
   status = 'ACTIVE';
 
   onSave(): void {
-    this.dialogRef.close({ name: this.name.trim(), categoryType: this.categoryType, status: this.status });
+    this.dialogRef.close({
+      categoryName: this.categoryName.trim(),
+      categoryDescription: this.categoryDescription.trim(),
+      categoryImage: this.categoryImage,
+      categoryType: this.categoryType,
+      status: this.status,
+    });
   }
 }

@@ -37,6 +37,8 @@ export interface DiscountApiItem {
   startDate?: string;
   endDate?: string;
   discountImage?: string;
+  outletId?: number;
+  outletName?: string;
   itemIds?: number[];
   items?: DiscountItemApi[];
   [key: string]: unknown;
@@ -52,6 +54,8 @@ export interface DiscountRow {
   startDate: string;
   endDate: string;
   discountImage?: string;
+  outletId?: number;
+  outletName?: string;
   itemIds: number[];
   items: { itemId: number; itemName: string }[];
 }
@@ -70,6 +74,8 @@ function mapApiDiscountToRow(d: DiscountApiItem): DiscountRow {
     startDate: String(d.startDate ?? ''),
     endDate: String(d.endDate ?? ''),
     discountImage: d.discountImage != null ? String(d.discountImage) : undefined,
+    outletId: d.outletId != null ? Number(d.outletId) : undefined,
+    outletName: d.outletName != null ? String(d.outletName) : undefined,
     itemIds: Array.isArray(d.itemIds) ? d.itemIds : [],
     items,
   };
@@ -83,15 +89,19 @@ export class AdminDiscountsApiService {
   ) {}
 
   /**
-   * GET /find-it/api/discounts?status=&itemId=
-   * Query params: status (optional), itemId (optional). Omit param when empty.
+   * GET /find-it/api/discounts?status=&itemId=&outletId=
+   * Query params: status (optional), itemId (optional), outletId (optional).
    */
-  getDiscounts(params: { status?: string; itemId?: string | number }): Observable<DiscountRow[]> {
+  getDiscounts(params: { status?: string; itemId?: string | number; outletId?: string | number }): Observable<DiscountRow[]> {
     const token = this.auth.token();
     if (!token) return of([]);
     const status = params.status == null || params.status === 'all' ? '' : String(params.status).trim();
     const itemId = params.itemId == null || params.itemId === '' ? '' : String(params.itemId);
-    const httpParams = new HttpParams().set('status', status).set('itemId', itemId);
+    const outletId = params.outletId == null || params.outletId === '' ? '' : String(params.outletId);
+    const httpParams = new HttpParams()
+      .set('status', status)
+      .set('itemId', itemId)
+      .set('outletId', outletId);
     const headers = { Authorization: `Bearer ${token}` };
     return this.http
       .get<DiscountApiItem[]>(DISCOUNTS_URL, { params: httpParams, headers })
@@ -116,7 +126,8 @@ export class AdminDiscountsApiService {
 
   /**
    * PUT /find-it/api/discounts/:id
-   * Body: { discountName, discountType, discountValue, startDate, endDate, status, itemIds }
+   * Headers: Content-Type: application/json, Authorization: Bearer <token>
+   * Body: { discountName, discountType, discountValue, startDate, endDate, status, itemIds [, discountImage ] }
    */
   updateDiscount(discountId: number, body: UpdateDiscountBody): Observable<unknown> {
     const token = this.auth.token();
@@ -130,6 +141,7 @@ export class AdminDiscountsApiService {
 
   /**
    * DELETE /find-it/api/discounts/:id
+   * Headers: Authorization: Bearer <token>
    */
   deleteDiscount(discountId: number): Observable<unknown> {
     const token = this.auth.token();

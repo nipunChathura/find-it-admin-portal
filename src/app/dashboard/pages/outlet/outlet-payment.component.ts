@@ -19,6 +19,8 @@ import { AdminOutletsApiService } from '../../../core/api/admin-outlets.api';
 import { AddPaymentDialogComponent } from './add-payment.dialog';
 import { EditPaymentDialogComponent } from './edit-payment.dialog';
 import { DeletePaymentConfirmDialogComponent } from './delete-payment-confirm.dialog';
+import { ReceiptImageDialogComponent } from './receipt-image.dialog';
+import { ImagesUploadApiService } from '../../../core/api/images-upload.api';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -75,6 +77,7 @@ export class OutletPaymentComponent implements AfterViewInit {
   constructor(
     private readonly adminPaymentsApi: AdminPaymentsApiService,
     private readonly adminOutletsApi: AdminOutletsApiService,
+    private readonly imagesUploadApi: ImagesUploadApiService,
     private readonly dialog: MatDialog,
     private readonly snackbar: SnackbarService,
   ) {
@@ -176,7 +179,8 @@ export class OutletPaymentComponent implements AfterViewInit {
       .open(AddPaymentDialogComponent, { width: '420px' })
       .afterClosed()
       .subscribe((result: CreatePaymentBody | undefined) => {
-        if (result == null) return;
+        // Only create payment when user clicked Save with valid data; ignore Cancel/close
+        if (result == null || typeof result !== 'object' || result.outletId == null) return;
         this.adminPaymentsApi.createPayment(result).subscribe({
           next: () => {
             this.snackbar.showSuccess('Payment added successfully.');
@@ -192,7 +196,7 @@ export class OutletPaymentComponent implements AfterViewInit {
       .open(EditPaymentDialogComponent, { width: '420px', data: { payment: row } })
       .afterClosed()
       .subscribe((result: CreatePaymentBody | undefined) => {
-        if (result == null) return;
+        if (result == null || typeof result?.outletId !== 'number') return;
         this.adminPaymentsApi.updatePayment(row.paymentId, result).subscribe({
           next: () => {
             this.snackbar.showSuccess('Payment updated successfully.');
@@ -220,6 +224,22 @@ export class OutletPaymentComponent implements AfterViewInit {
           error: () => this.snackbar.showError('Failed to delete payment.'),
         });
       });
+  }
+
+  onShowReceipt(row: PaymentRow): void {
+    const raw = (row.receiptImage || '').trim();
+    if (!raw) return;
+    const fileName = raw.includes('/') ? raw.split('/').pop()! : raw;
+    this.imagesUploadApi.getImageShow('receipt', fileName).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        this.dialog
+          .open(ReceiptImageDialogComponent, { data: { imageUrl: url }, width: '720px' })
+          .afterClosed()
+          .subscribe(() => URL.revokeObjectURL(url));
+      },
+      error: () => this.snackbar.showError('Failed to load receipt image.'),
+    });
   }
 
   canShowApprove(row: PaymentRow): boolean {

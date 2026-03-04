@@ -163,6 +163,8 @@
       <app-map-pin-picker
         [latitude]="latitude"
         [longitude]="longitude"
+        [mapCenter]="selectedCityMapCenter"
+        [mapZoom]="selectedCityMapZoom"
         (locationSelected)="onLocationSelected($event)"
       />
     } @else {

@@ -82,6 +82,11 @@ export class AdminPaymentsApiService {
       );
   }
 
+  /**
+   * POST /find-it/api/payments
+   * Headers: Content-Type: application/json, Authorization: Bearer <token>
+   * Body: { outletId, paymentType, amount, paymentDate, paidMonth, receiptImage, status }
+   */
   createPayment(body: CreatePaymentBody): Observable<unknown> {
     const token = this.auth.token();
     if (!token) return of(undefined);
@@ -89,6 +94,11 @@ export class AdminPaymentsApiService {
     return this.http.post(PAYMENTS_URL, body, { headers });
   }
 
+  /**
+   * PUT /find-it/api/payments/:id
+   * Headers: Content-Type: application/json, Authorization: Bearer <token>
+   * Body: { outletId, paymentType, amount, paymentDate, paidMonth, receiptImage, status }
+   */
   updatePayment(paymentId: number, body: CreatePaymentBody): Observable<unknown> {
     const token = this.auth.token();
     if (!token) return of(undefined);
@@ -96,6 +106,10 @@ export class AdminPaymentsApiService {
     return this.http.put(`${PAYMENTS_URL}/${paymentId}`, body, { headers });
   }
 
+  /**
+   * DELETE /find-it/api/payments/:id
+   * Headers: Authorization: Bearer <token>
+   */
   deletePayment(paymentId: number): Observable<unknown> {
     const token = this.auth.token();
     if (!token) return of(undefined);

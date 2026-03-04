@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MerchantRow, MerchantType } from '../../../core/api/admin-merchants.api';
+import { ImagesUploadApiService } from '../../../core/api/images-upload.api';
+import { ApiImageComponent } from '../../../shared/api-image/api-image.component';
 
 export interface EditMerchantDialogData extends MerchantRow {}
 
@@ -36,6 +38,7 @@ const MERCHANT_TYPE_OPTIONS = [
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    ApiImageComponent,
   ],
   template: `
     <h2 mat-dialog-title>Edit Merchant</h2>
@@ -77,7 +80,7 @@ const MERCHANT_TYPE_OPTIONS = [
         @if (merchantProfileImage) {
           <div class="edit-merchant-dialog__preview-wrap">
             <span class="edit-merchant-dialog__preview-label">Current image:</span>
-            <img [src]="merchantProfileImage" alt="Profile" class="edit-merchant-dialog__preview-img" />
+            <app-api-image type="merchant" [pathOrFileName]="merchantProfileImage" alt="Profile" imgClass="edit-merchant-dialog__preview-img" />
           </div>
         } @else {
           <p class="edit-merchant-dialog__no-image">No image. Use the file input above to add one.</p>
@@ -105,8 +108,8 @@ const MERCHANT_TYPE_OPTIONS = [
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn">Cancel</button>
-      <button mat-raised-button color="primary" (click)="onUpdate()" type="button">Update</button>
+      <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn" [disabled]="saving">Cancel</button>
+      <button mat-raised-button color="primary" (click)="onUpdate()" type="button" [disabled]="saving">{{ saving ? 'Uploading...' : 'Update' }}</button>
     </mat-dialog-actions>
   `,
   styles: [
@@ -130,6 +133,7 @@ const MERCHANT_TYPE_OPTIONS = [
 export class EditMerchantDialogComponent {
   readonly data: EditMerchantDialogData = inject(MAT_DIALOG_DATA);
   private readonly dialogRef = inject(MatDialogRef<EditMerchantDialogComponent>);
+  private readonly imagesUploadApi = inject(ImagesUploadApiService);
 
   readonly statusOptions = STATUS_OPTIONS;
   readonly merchantTypeOptions = MERCHANT_TYPE_OPTIONS;
@@ -139,6 +143,8 @@ export class EditMerchantDialogComponent {
   merchantEmail: string;
   merchantNic: string;
   merchantProfileImage: string;
+  selectedMerchantFile: File | null = null;
+  saving = false;
   merchantAddress: string;
   merchantPhoneNumber: string;
   merchantType: MerchantType;
@@ -162,6 +168,7 @@ export class EditMerchantDialogComponent {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
+    this.selectedMerchantFile = file;
     const reader = new FileReader();
     reader.onload = () => {
       this.merchantProfileImage = reader.result as string;
@@ -171,21 +178,36 @@ export class EditMerchantDialogComponent {
 
   clearImage(): void {
     this.merchantProfileImage = '';
+    this.selectedMerchantFile = null;
   }
 
   onUpdate(): void {
-    this.dialogRef.close({
+    if (this.saving) return;
+    const buildResult = (profileImageValue: string) => ({
       merchantId: this.data.merchantId,
       merchantName: this.merchantName.trim(),
       username: this.username.trim(),
       merchantEmail: this.merchantEmail.trim(),
       merchantNic: this.merchantNic.trim(),
-      merchantProfileImage: this.merchantProfileImage.trim(),
+      merchantProfileImage: profileImageValue,
       merchantAddress: this.merchantAddress.trim(),
       merchantPhoneNumber: this.merchantPhoneNumber.trim(),
       merchantType: this.merchantType,
       merchantStatus: this.merchantStatus,
       parentMerchantName: this.parentMerchantName.trim(),
     });
+    if (this.selectedMerchantFile) {
+      this.saving = true;
+      this.imagesUploadApi.upload(this.selectedMerchantFile, 'merchant').subscribe({
+        next: (res) => {
+          this.saving = false;
+          const imageValue = res?.relativePath || res?.fileName || '';
+          this.dialogRef.close(buildResult(imageValue));
+        },
+        error: () => { this.saving = false; },
+      });
+    } else {
+      this.dialogRef.close(buildResult(this.merchantProfileImage.trim()));
+    }
   }
 }

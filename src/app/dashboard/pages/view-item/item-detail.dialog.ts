@@ -3,19 +3,20 @@ import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { ViewItemRow } from '../../../core/api/admin-items.api';
+import { ApiImageComponent } from '../../../shared/api-image/api-image.component';
 
 export interface ItemDetailDialogData extends ViewItemRow {}
 
 @Component({
   selector: 'app-item-detail-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, ApiImageComponent],
   template: `
     <h2 mat-dialog-title>Item Details</h2>
     <mat-dialog-content class="item-detail-dialog__content">
       @if (data.itemImage) {
         <div class="item-detail-dialog__image-wrap">
-          <img [src]="data.itemImage" alt="Item" class="item-detail-dialog__image" />
+          <app-api-image type="item" [pathOrFileName]="data.itemImage" alt="Item" imgClass="item-detail-dialog__image" />
         </div>
       }
       <dl class="item-detail-dialog__details">
@@ -35,8 +36,8 @@ export interface ItemDetailDialogData extends ViewItemRow {}
         <dd>{{ data.status }}</dd>
         <dt>Availability</dt>
         <dd>{{ data.availability ? 'Yes' : 'No' }}</dd>
-        <dt>Discount Available</dt>
-        <dd>{{ data.discountAvailable ? 'Yes' : 'No' }}</dd>
+        <dt>Discount Availability</dt>
+        <dd>{{ (data.discountAvailability ?? data.discountAvailable) ? 'Yes' : 'No' }}</dd>
       </dl>
     </mat-dialog-content>
     <mat-dialog-actions align="end">

@@ -32,6 +32,31 @@ const BUSINESS_CATEGORY_OPTIONS = [
 
 const SEARCH_LIMIT = 5;
 
+/** Approximate coordinates for Sri Lankan cities – map zooms to selected city. */
+const CITY_CENTER_ZOOM = 13;
+const SRI_LANKA_CENTER = { lat: 7.8731, lng: 80.7718 };
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  colombo: { lat: 6.9271, lng: 79.8612 },
+  kandy: { lat: 7.2906, lng: 80.6337 },
+  galle: { lat: 6.0531, lng: 80.2110 },
+  jaffna: { lat: 9.6615, lng: 80.0255 },
+  negombo: { lat: 7.2088, lng: 79.8358 },
+  kurunegala: { lat: 7.4863, lng: 80.3624 },
+  anuradhapura: { lat: 8.3114, lng: 80.4037 },
+  badulla: { lat: 6.9934, lng: 81.0550 },
+  ratnapura: { lat: 6.6844, lng: 80.4036 },
+  trincomalee: { lat: 8.5874, lng: 81.2152 },
+  matara: { lat: 5.9494, lng: 80.5493 },
+  batticaloa: { lat: 7.7102, lng: 81.6924 },
+  hambantota: { lat: 6.124, lng: 81.1132 },
+  gampaha: { lat: 7.084, lng: 80.0094 },
+  kalutara: { lat: 6.5833, lng: 79.9667 },
+  vavuniya: { lat: 8.7514, lng: 80.4971 },
+  ampara: { lat: 7.2975, lng: 81.682 },
+  kilinochchi: { lat: 9.3961, lng: 80.3982 },
+  mullaitivu: { lat: 9.2671, lng: 80.8142 },
+};
+
 @Component({
   selector: 'app-add-outlet-dialog',
   standalone: true,
@@ -192,6 +217,19 @@ export class AddOutletDialogComponent implements OnInit, OnDestroy {
   /** True when a city is selected – show the map in the Location section. */
   get showMapAfterCitySelected(): boolean {
     return this.cityId != null;
+  }
+
+  /** Center the map on the selected city when known; otherwise Sri Lanka. */
+  get selectedCityMapCenter(): { lat: number; lng: number } | null {
+    const name = (this.citySearchText ?? '').trim().toLowerCase();
+    if (!name) return null;
+    return CITY_COORDS[name] ?? SRI_LANKA_CENTER;
+  }
+
+  /** Zoom level when a city is selected (zoomed in to city). */
+  get selectedCityMapZoom(): number {
+    const name = (this.citySearchText ?? '').trim().toLowerCase();
+    return name && CITY_COORDS[name] ? CITY_CENTER_ZOOM : 11;
   }
 
   onLocationSelected(loc: MapPinLocation): void {

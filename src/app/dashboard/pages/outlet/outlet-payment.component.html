@@ -69,6 +69,11 @@
             <button mat-icon-button matTooltip="Delete" (click)="onDelete(row)" type="button" aria-label="Delete payment">
               <mat-icon>delete</mat-icon>
             </button>
+            @if (row.receiptImage) {
+              <button mat-icon-button matTooltip="Show receipt" (click)="onShowReceipt(row)" type="button" aria-label="Show receipt">
+                <mat-icon>receipt</mat-icon>
+              </button>
+            }
             @if (canShowApprove(row)) {
               <button mat-icon-button matTooltip="Approve" (click)="onApprove(row)" type="button" aria-label="Approve payment" class="outlet-payment-page__action-approve">
                 <mat-icon>how_to_reg</mat-icon>

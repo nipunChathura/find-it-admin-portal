@@ -13,6 +13,7 @@ import { Observable, Subject, of } from 'rxjs';
 import { debounceTime, switchMap, map, takeUntil } from 'rxjs/operators';
 import { MerchantRow, MerchantType } from '../../../core/api/admin-merchants.api';
 import { AdminMerchantsApiService } from '../../../core/api/admin-merchants.api';
+import { ImagesUploadApiService } from '../../../core/api/images-upload.api';
 
 /** Create merchant API body: parentMerchantId null = main merchant, number = sub-merchant. */
 export interface AddMerchantDialogResult {
@@ -144,8 +145,8 @@ const PARENT_SEARCH_RESULT_LIMIT = 5;
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn">Cancel</button>
-      <button mat-raised-button color="primary" (click)="onSave()" type="button">Save</button>
+      <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn" [disabled]="saving">Cancel</button>
+      <button mat-raised-button color="primary" (click)="onSave()" type="button" [disabled]="saving">{{ saving ? 'Uploading...' : 'Save' }}</button>
     </mat-dialog-actions>
   `,
   styles: [
@@ -167,6 +168,7 @@ const PARENT_SEARCH_RESULT_LIMIT = 5;
 export class AddMerchantDialogComponent implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<AddMerchantDialogComponent>);
   private readonly merchantsApi = inject(AdminMerchantsApiService);
+  private readonly imagesUploadApi = inject(ImagesUploadApiService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
   private readonly parentSearchTerm$ = new Subject<string>();
@@ -183,6 +185,8 @@ export class AddMerchantDialogComponent implements OnInit, OnDestroy {
   merchantEmail = '';
   merchantNic = '';
   merchantProfileImage = '';
+  selectedMerchantFile: File | null = null;
+  saving = false;
   merchantAddress = '';
   merchantPhoneNumber = '';
   merchantType: MerchantType = 'FREE';
@@ -238,6 +242,7 @@ export class AddMerchantDialogComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
+    this.selectedMerchantFile = file;
     const reader = new FileReader();
     reader.onload = () => {
       this.merchantProfileImage = reader.result as string;
@@ -248,21 +253,35 @@ export class AddMerchantDialogComponent implements OnInit, OnDestroy {
 
   clearImage(): void {
     this.merchantProfileImage = '';
+    this.selectedMerchantFile = null;
   }
 
   onSave(): void {
-    const profileImage = (this.merchantProfileImage || '').trim();
-    this.dialogRef.close({
+    const buildResult = (profileImageValue: string | null) => ({
       parentMerchantId: this.isSubMerchant ? this.parentMerchantId : null,
       merchantName: this.merchantName.trim(),
       merchantEmail: this.merchantEmail.trim(),
       merchantAddress: this.merchantAddress.trim(),
       merchantNic: this.merchantNic.trim(),
       merchantPhoneNumber: this.merchantPhoneNumber.trim(),
-      merchantProfileImage: profileImage || null,
+      merchantProfileImage: profileImageValue,
       merchantType: this.merchantType,
       password: this.password || '',
       username: this.username.trim(),
     });
+    if (this.selectedMerchantFile) {
+      this.saving = true;
+      this.imagesUploadApi.upload(this.selectedMerchantFile, 'merchant').subscribe({
+        next: (res) => {
+          this.saving = false;
+          const imageValue = res?.relativePath || res?.fileName || null;
+          this.dialogRef.close(buildResult(imageValue));
+        },
+        error: () => { this.saving = false; },
+      });
+    } else {
+      const profileImage = (this.merchantProfileImage || '').trim();
+      this.dialogRef.close(buildResult(profileImage || null));
+    }
   }
 }

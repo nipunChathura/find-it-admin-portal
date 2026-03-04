@@ -99,7 +99,7 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let item; columns: displayedColumns" class="outlet-page__row"></tr>
+        <tr mat-row *matRowDef="let item; columns: displayedColumns" class="outlet-page__row outlet-page__row--clickable" (click)="onViewDetails(item)"></tr>
 
         <tr class="outlet-page__no-data" *matNoDataRow>
           <td class="mat-cell" [attr.colspan]="displayedColumns.length">No outlets found.</td>

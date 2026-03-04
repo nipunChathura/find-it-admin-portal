@@ -16,10 +16,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { AdminDiscountsApiService, CreateDiscountBody, DiscountRow, UpdateDiscountBody } from '../../../core/api/admin-discounts.api';
 import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { AdminItemsApiService } from '../../../core/api/admin-items.api';
+import { AdminOutletsApiService } from '../../../core/api/admin-outlets.api';
 import { DiscountDetailDialogComponent } from './discount-detail.dialog';
 import { AddDiscountDialogComponent } from './add-discount.dialog';
 import { EditDiscountDialogComponent } from './edit-discount.dialog';
 import { DeleteDiscountConfirmDialogComponent } from './delete-discount-confirm.dialog';
+import { ApiImageComponent } from '../../../shared/api-image/api-image.component';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -56,8 +58,8 @@ export class ItemDiscountComponent implements AfterViewInit {
   readonly displayedColumns: string[] = [
     'actions',
     'discountId',
-    'discountImage',
     'discountName',
+    'outletName',
     'discountType',
     'discountValue',
     'discountStatus',
@@ -71,6 +73,9 @@ export class ItemDiscountComponent implements AfterViewInit {
   dataSource = new MatTableDataSource<DiscountRow>([]);
 
   statusFilter = 'all';
+  /** Outlet filter: '' = all, number = outlet id. */
+  outletIdFilter: number | '' = '';
+  outletOptions: { outletId: number; outletName: string }[] = [];
   /** Item filter: '' = all, number = item id. Search dropdown for item name. */
   itemIdFilter: number | '' = '';
   itemSearchText = '';
@@ -80,11 +85,27 @@ export class ItemDiscountComponent implements AfterViewInit {
   constructor(
     private readonly adminDiscountsApi: AdminDiscountsApiService,
     private readonly adminItemsApi: AdminItemsApiService,
+    private readonly adminOutletsApi: AdminOutletsApiService,
     private readonly dialog: MatDialog,
     private readonly snackbar: SnackbarService,
   ) {
     this.loadDiscounts();
     this.loadDefaultItemOptions();
+    this.loadOutletOptions();
+  }
+
+  private loadOutletOptions(): void {
+    this.adminOutletsApi.getOutlets({}).subscribe({
+      next: (rows) => {
+        this.outletOptions = rows.map((r) => ({
+          outletId: r.row.outletId,
+          outletName: r.row.outletName,
+        }));
+      },
+      error: () => {
+        this.outletOptions = [];
+      },
+    });
   }
 
   ngAfterViewInit(): void {
@@ -239,6 +260,7 @@ export class ItemDiscountComponent implements AfterViewInit {
 
   onClear(): void {
     this.statusFilter = 'all';
+    this.outletIdFilter = '';
     this.itemIdFilter = '';
     this.itemSearchText = '';
     this.loadDefaultItemOptions();

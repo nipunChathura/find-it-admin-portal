@@ -347,7 +347,7 @@ export class ViewItemComponent implements AfterViewInit {
         case 'price': return row.price;
         case 'status': return row.status;
         case 'availability': return row.availability ? 1 : 0;
-        case 'discountAvailability': return row.discountAvailable ? 1 : 0;
+        case 'discountAvailability': return (row.discountAvailability ?? row.discountAvailable) ? 1 : 0;
         default: return '';
       }
     };

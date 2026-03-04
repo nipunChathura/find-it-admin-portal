@@ -17,6 +17,7 @@ import { AdminOutletsApiService, OutletRow, OutletTableItem } from '../../../cor
 import { DeleteOutletConfirmDialogComponent } from './delete-outlet-confirm.dialog';
 import { EditOutletDialogComponent, EditOutletDialogResult } from './edit-outlet.dialog';
 import { AddOutletDialogComponent, AddOutletDialogResult } from './add-outlet.dialog';
+import { OutletDetailDialogComponent } from './outlet-detail.dialog';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -119,6 +120,15 @@ export class OutletComponent implements AfterViewInit {
         },
         error: () => this.snackbar.showError('Failed to update outlet.'),
       });
+    });
+  }
+
+  onViewDetails(item: OutletTableItem): void {
+    this.dialog.open(OutletDetailDialogComponent, {
+      width: '520px',
+      maxHeight: '90vh',
+      data: { item },
+      disableClose: false,
     });
   }
 

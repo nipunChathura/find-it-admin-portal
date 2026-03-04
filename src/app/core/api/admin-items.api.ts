@@ -18,6 +18,7 @@ export interface ItemApiItem {
   price?: number;
   availability?: boolean;
   discountAvailable?: boolean;
+  discountAvailability?: boolean;
   itemImage?: string | null;
   status?: string;
   [key: string]: unknown;
@@ -37,6 +38,8 @@ export interface ViewItemRow {
   status: string;
   availability: boolean;
   discountAvailable: boolean;
+  /** From API field discountAvailability. */
+  discountAvailability?: boolean;
   itemImage: string | null;
 }
 
@@ -53,7 +56,8 @@ function mapApiItemToRow(item: ItemApiItem): ViewItemRow {
     price: Number(item.price ?? 0),
     status: String(item.status ?? 'ACTIVE'),
     availability: item.availability === true,
-    discountAvailable: item.discountAvailable === true,
+    discountAvailable: item.discountAvailable === true || item.discountAvailability === true,
+    discountAvailability: item.discountAvailability === true,
     itemImage: item.itemImage ?? null,
   };
 }
@@ -94,6 +98,25 @@ export class AdminItemsApiService {
         params: httpParams,
         headers,
       })
+      .pipe(
+        map((body) => {
+          const list = Array.isArray(body) ? body : (body?.content ?? body?.data ?? []);
+          return (list as ItemApiItem[]).map(mapApiItemToRow);
+        }),
+      );
+  }
+
+  /**
+   * GET /find-it/api/items/outlet/{outletId}
+   * Returns items for the given outlet.
+   */
+  getItemsByOutlet(outletId: number): Observable<ViewItemRow[]> {
+    const token = this.auth.token();
+    if (!token) return of([]);
+    const url = `${ITEMS_URL}/outlet/${outletId}`;
+    const headers = { Accept: 'application/json', Authorization: `Bearer ${token}` };
+    return this.http
+      .get<ItemApiItem[] | { content?: ItemApiItem[]; data?: ItemApiItem[] }>(url, { headers })
       .pipe(
         map((body) => {
           const list = Array.isArray(body) ? body : (body?.content ?? body?.data ?? []);
