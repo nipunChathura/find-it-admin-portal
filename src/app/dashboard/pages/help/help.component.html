@@ -2,23 +2,20 @@
   <header class="help-page-header">
     <mat-icon class="help-page-icon">help_outline</mat-icon>
     <h1 class="help-page-title">Help</h1>
-    <p class="help-page-subtitle">How the Find It Admin Portal works</p>
+    <p class="help-page-subtitle">Find It Admin Portal – user guide and section details</p>
   </header>
 
   <mat-card class="help-overview">
     <h2>Overview</h2>
     <p>
       The <strong>Find It Admin Portal</strong> is the central place to manage your platform: admin users, customers,
-      products (items), merchants, categories, outlets, and payments. You must be logged in to use any section.
+      items, merchants, sub-merchants, categories, outlets, payments, and notifications. You must be <strong>logged in</strong> to use any section.
     </p>
-    <p>
-      <strong>Sidebar (left):</strong> Use the menu on the left to open each section. Some items (e.g. Item, Outlet)
-      expand to show sub-pages. The current page is highlighted.
-    </p>
-    <p>
-      <strong>Top toolbar:</strong> The bar at the top includes the app title, your username, Messages, Notifications (bell),
-      Account (profile), and Logout. Use the menu icon to collapse or expand the sidebar.
-    </p>
+    <h3>Layout</h3>
+    <ul>
+      <li><strong>Sidebar (left):</strong> Main menu. Click <strong>Dashboard</strong> to see the home overview. <strong>User</strong>, <strong>Merchant</strong>, <strong>Category</strong>, <strong>Customer</strong>, and <strong>Help</strong> open directly. <strong>Item</strong> and <strong>Outlet</strong> expand to show sub-menus (e.g. Item → View items, Item Discount; Outlet → Outlet list, Outlet Schedule, Payment). The current page is highlighted in blue.</li>
+      <li><strong>Top toolbar:</strong> App title <strong>Find It Admin Portal</strong>, your greeting (Hi, username), <strong>Notifications</strong> (bell icon with unread count), <strong>Account</strong> (profile icon), and <strong>Logout</strong>. The <strong>menu icon</strong> (top-left) collapses or expands the sidebar.</li>
+    </ul>
   </mat-card>
 
   <mat-accordion class="help-accordion">
@@ -31,13 +28,17 @@
       </mat-expansion-panel-header>
       <h3>What it is</h3>
       <p>
-        The Dashboard is the main container. When you click <strong>Dashboard</strong> in the sidebar (or open the
-        portal), you are taken to the default start page, which is <strong>Manage User</strong>.
+        Clicking <strong>Dashboard</strong> in the sidebar (or opening the portal after login) shows the <strong>Dashboard home</strong> page. This is the default start page and gives an overview of the platform.
       </p>
-      <h3>What you can do</h3>
+      <h3>Dashboard home sections</h3>
       <ul>
-        <li>Use the sidebar to switch between User, Customer, Item, Merchant, Category, Payment, Notifications, Outlet, and Help.</li>
-        <li>The main content area (centre) shows the page for the menu item you selected.</li>
+        <li><strong>Welcome:</strong> Greeting with your username.</li>
+        <li><strong>KPI stat cards:</strong> Users, Merchants, Sub Merchants, Items, Customers, Outlets, Categories. Each card shows a count from the API and links to the related section when clicked. Below that: Pending approvals and Active discounts.</li>
+        <li><strong>Monthly income:</strong> Horizontal bar chart showing income (LKR) by month for the last 6 months. Data comes from the dashboard monthly-income API.</li>
+        <li><strong>Recent notifications:</strong> Up to 5 latest notifications. Click <strong>View all notifications</strong> to open the full Notifications page.</li>
+        <li><strong>Merchant summary:</strong> Total merchants and total outlets from the merchant-summary API.</li>
+        <li><strong>Outlet distribution:</strong> Pie chart by category/merchant from the same API.</li>
+        <li><strong>Quick actions:</strong> Buttons to go to User page, Merchants, Payments, and Discounts quickly.</li>
       </ul>
     </mat-expansion-panel>
 
@@ -50,31 +51,30 @@
       </mat-expansion-panel-header>
       <h3>What it is</h3>
       <p>
-        <strong>Manage User</strong> lets you view and manage <strong>admin users</strong> who can log in to this portal.
-        You can add new admins, edit their details, change status, approve pending users, or remove users.
+        <strong>User</strong> (sidebar) opens the <strong>Manage User</strong> page. Here you view and manage <strong>admin users</strong> who can log in to this portal. You can add new admins, edit details, change status, approve pending users, or delete users. From the Dashboard home, the <strong>User</strong> KPI card or the <strong>User</strong> quick action also navigates to this page.
       </p>
       <h3>Page layout</h3>
       <ul>
-        <li><strong>Top:</strong> Page title “Manage User” and an <strong>Add User</strong> button.</li>
-        <li><strong>Filters:</strong> A <strong>Status</strong> dropdown (All, ACTIVE, INACTIVE, PENDING, APPROVED, FORGOT_PASSWORD_PENDING) and a <strong>Search</strong> box. Click <strong>Search</strong> to apply; <strong>Clear</strong> resets filters and reloads the list.</li>
-        <li><strong>Table:</strong> Columns show ID, Username, Email, Status, Created Date, and <strong>Actions</strong> (Edit, Delete, and for system admins, Approve). You can sort by clicking column headers and change page size with the paginator at the bottom.</li>
+        <li><strong>Top:</strong> Page title and <strong>Add User</strong> button.</li>
+        <li><strong>Filters:</strong> <strong>Status</strong> dropdown (All, ACTIVE, INACTIVE, PENDING, APPROVED, REJECTED, FORGOT_PASSWORD_PENDING) and <strong>Search</strong> box. Click <strong>Search</strong> to apply; <strong>Clear</strong> resets and reloads the list.</li>
+        <li><strong>Table:</strong> Columns: ID, Name/Username, Email, Status, Created Date, and <strong>Actions</strong> (Edit, Delete; for System Admin, Approve/Reject for PENDING users). Sort by column headers; use the paginator for page size (e.g. 5, 10, 25, 50) and page navigation.</li>
       </ul>
       <h3>How to add a user</h3>
       <ol>
         <li>Click <strong>Add User</strong>.</li>
-        <li>In the dialog, enter <strong>Name</strong>, <strong>Username</strong>, <strong>Email</strong>, <strong>Password</strong>, and optionally <strong>Status</strong> (if your role allows).</li>
+        <li>Enter <strong>Name</strong>, <strong>Username</strong>, <strong>Email</strong>, <strong>Password</strong>, <strong>Role</strong>, and <strong>Status</strong> (if your role allows).</li>
         <li>Click <strong>Save</strong>. The new user appears in the table and can log in with the username and password you set.</li>
       </ol>
       <h3>How to edit a user</h3>
       <ol>
-        <li>Find the user in the table and click the <strong>Edit</strong> (pencil) icon in the Actions column.</li>
-        <li>Update Username, Email, or Status in the dialog. Only users with the right role can change status.</li>
+        <li>Find the user and click the <strong>Edit</strong> (pencil) icon in the Actions column.</li>
+        <li>Update Username, Email, Role, or Status in the dialog. Only users with the right role can change status.</li>
         <li>Click <strong>Update</strong> to save.</li>
       </ol>
       <h3>Other actions</h3>
       <ul>
-        <li><strong>Delete:</strong> Click the delete (trash) icon, confirm in the dialog. The user’s status is set to deleted; they can no longer log in.</li>
-        <li><strong>Approve:</strong> If you are a <strong>System Admin</strong>, you will see an Approve (check) icon for users with status <strong>PENDING</strong>. Click it to approve them. System Admin users themselves cannot be edited or deleted from this screen.</li>
+        <li><strong>Delete:</strong> Click the delete (trash) icon and confirm. The user’s status is set to deleted; they can no longer log in.</li>
+        <li><strong>Approve / Reject:</strong> As <strong>System Admin</strong>, for users with status <strong>PENDING</strong> you see Approve (check) and Reject. Approve or Reject (with optional reason) to update their status.</li>
       </ul>
     </mat-expansion-panel>
 
@@ -139,15 +139,19 @@
       </mat-expansion-panel-header>
       <h3>What it is</h3>
       <p>
-        <strong>Merchant</strong> is for managing <strong>merchants</strong> (businesses) that use the Find It platform.
-        Merchants usually have one or more outlets and sell items. This page lists all merchants and lets you add, edit, or delete them.
+        <strong>Merchant</strong> is for managing <strong>merchants</strong> (businesses) and <strong>sub-merchants</strong> that use the Find It platform. Merchants can have sub-merchants and one or more outlets; they sell items. The Dashboard home shows total Merchants and Sub Merchants in KPI cards; both link to this page.
       </p>
+      <h3>Page layout</h3>
+      <ul>
+        <li><strong>Table:</strong> Lists merchants (and sub-merchants where applicable) with columns such as ID, Name, Email, Status, Parent merchant (for sub-merchants), and <strong>Actions</strong>.</li>
+        <li>Use <strong>Search</strong> and <strong>Status</strong> (and any other filters) to find merchants. Sort by column headers; use the paginator for paging.</li>
+      </ul>
       <h3>What you can do</h3>
       <ul>
-        <li>View the merchant list (often with search and filters).</li>
-        <li><strong>Add Merchant:</strong> Create a new merchant (name, contact details, etc. as per the form).</li>
-        <li><strong>Edit:</strong> Change merchant details from the Actions column.</li>
-        <li><strong>Delete:</strong> Remove a merchant (confirm in the dialog). Deleting a merchant may affect linked outlets and items, depending on backend rules.</li>
+        <li><strong>Add Merchant:</strong> Create a new main merchant or sub-merchant (name, email, address, contact, profile image, type, etc. as per the form).</li>
+        <li><strong>Edit:</strong> Change merchant details from the Actions column (pencil icon).</li>
+        <li><strong>Delete:</strong> Remove a merchant after confirming in the dialog. This may affect linked outlets and items depending on backend rules.</li>
+        <li><strong>Approve / Reject:</strong> For pending merchants (or sub-merchants), System Admin can Approve or Reject with a reason.</li>
       </ul>
     </mat-expansion-panel>
 
@@ -160,14 +164,16 @@
       </mat-expansion-panel-header>
       <h3>What it is</h3>
       <p>
-        <strong>Category</strong> lets you manage <strong>categories</strong> used to group items (e.g. Food, Electronics).
-        Categories help customers and admins find and filter items.
+        <strong>Category</strong> lets you manage <strong>categories</strong> used to group items (e.g. Food, Electronics). Categories help customers and admins find and filter items. The Dashboard home shows total Categories in a KPI card that links here.
       </p>
+      <h3>Page layout</h3>
+      <ul>
+        <li><strong>Table:</strong> Lists categories with columns such as ID, Name, Description, and <strong>Actions</strong>. Use <strong>Search</strong> and any filters to find categories; sort by column; use the paginator for paging.</li>
+      </ul>
       <h3>What you can do</h3>
       <ul>
-        <li>View all categories in a table (with search/filters if available).</li>
-        <li><strong>Add Category:</strong> Create a new category (e.g. name, description).</li>
-        <li><strong>Edit:</strong> Update a category’s name or other fields.</li>
+        <li><strong>Add Category:</strong> Create a new category (name, description, etc.).</li>
+        <li><strong>Edit:</strong> Update a category’s name or other fields from the Actions column.</li>
         <li><strong>Delete:</strong> Remove a category. Ensure no items depend on it, or reassign them first, to avoid errors.</li>
       </ul>
     </mat-expansion-panel>
@@ -181,14 +187,15 @@
       </mat-expansion-panel-header>
       <h3>What it is</h3>
       <p>
-        <strong>Payment</strong> is for managing <strong>payment methods or payment configurations</strong> linked to
-        <strong>outlets</strong>. You can open it from the main menu (<strong>Payment</strong>) or from under
-        <strong>Outlet → Payment</strong>.
+        <strong>Payment</strong> is for managing <strong>payment methods or configurations</strong> linked to outlets. Open it from the main menu (<strong>Payment</strong>) or from <strong>Outlet → Payment</strong>. The Dashboard home has a <strong>Payments</strong> quick action that links here.
       </p>
+      <h3>Page layout</h3>
+      <ul>
+        <li><strong>Table:</strong> Lists payments with columns such as Outlet, Type, Status, and <strong>Actions</strong>. Use <strong>Outlet</strong> and <strong>Status</strong> filters and Search; sort and paginate as needed.</li>
+      </ul>
       <h3>What you can do</h3>
       <ul>
-        <li>View payments in a table, often filterable by <strong>Outlet</strong> and <strong>Status</strong>.</li>
-        <li><strong>Add:</strong> Create a new payment method/configuration for an outlet (e.g. type, account details, status).</li>
+        <li><strong>Add:</strong> Create a new payment method/configuration for an outlet (type, account details, status).</li>
         <li><strong>Edit:</strong> Change payment details or status from the Actions column.</li>
         <li><strong>Delete:</strong> Remove a payment configuration after confirming in the dialog.</li>
       </ul>
@@ -209,15 +216,17 @@
       <h3>Bell icon (toolbar)</h3>
       <ul>
         <li>Click the <strong>bell</strong> in the top toolbar to open a dropdown panel.</li>
-        <li>A <strong>red badge</strong> on the bell shows the number of <strong>unread</strong> notifications (hidden when zero).</li>
-        <li>In the dropdown you see: notification <strong>title</strong>, short <strong>message</strong>, <strong>time</strong> (e.g. “5m ago”), and type (info, success, warning, error). Unread items are highlighted.</li>
-        <li>Use the <strong>checkmark</strong> on a row to mark that notification as read, or click <strong>Mark all as read</strong> at the top.</li>
-        <li>Click <strong>View All</strong> to open the full Notifications page. The list is refreshed automatically every 5 minutes.</li>
+        <li>A <strong>red badge</strong> on the bell shows the count of <strong>unread</strong> notifications (hidden when zero).</li>
+        <li>In the dropdown: each item shows <strong>title</strong>, <strong>message</strong>, <strong>time</strong> (e.g. “5m ago”), and type (info, success, warning, error). Unread items are highlighted.</li>
+        <li>Use the <strong>checkmark</strong> on a row to mark as read, or <strong>Mark all as read</strong> at the top.</li>
+        <li>Click <strong>View All</strong> to open the full Notifications page. The list is refreshed automatically (e.g. every 5 minutes).</li>
       </ul>
-      <h3>Notifications page (View All)</h3>
+      <h3>Dashboard – Recent notifications</h3>
+      <p>On the Dashboard home, the <strong>Recent notifications</strong> card shows the latest <strong>5</strong> notifications. Click <strong>View all notifications</strong> to navigate to the full Notifications page (same as sidebar <strong>Notifications</strong>).</p>
+      <h3>Notifications page (full list)</h3>
       <ul>
-        <li>Open from the bell dropdown (<strong>View All</strong>) or from the sidebar (<strong>Notifications</strong>).</li>
-        <li>Shows all notifications in a list. You can <strong>Mark all as read</strong> or mark individual items as read. Same data as the dropdown, in a full-page view.</li>
+        <li>Open from the bell dropdown (<strong>View All</strong>), from the sidebar (<strong>Notifications</strong>), or from Dashboard home (<strong>View all notifications</strong>).</li>
+        <li>Shows all notifications. You can <strong>Mark all as read</strong> or mark individual items as read.</li>
       </ul>
     </mat-expansion-panel>
 
@@ -230,8 +239,7 @@
       </mat-expansion-panel-header>
       <h3>What it is</h3>
       <p>
-        <strong>Outlet</strong> represents a physical or logical <strong>location</strong> (e.g. a store branch).
-        Under the Outlet menu there are three sub-pages: <strong>Outlet</strong>, <strong>Outlet Schedule</strong>, and <strong>Payment</strong>.
+        <strong>Outlet</strong> represents a physical or logical <strong>location</strong> (e.g. a store branch). Under the Outlet menu there are three sub-pages: <strong>Outlet</strong>, <strong>Outlet Schedule</strong>, and <strong>Payment</strong>. The Dashboard home shows total Outlets in a KPI card and an <strong>Outlet distribution</strong> pie chart (by category/merchant); both use data from the merchant-summary API.
       </p>
       <h3>Outlet (list)</h3>
       <ul>
@@ -251,11 +259,12 @@
   <mat-card class="help-tips">
     <h2>Tips</h2>
     <ul>
-      <li><strong>Sidebar:</strong> Use the <strong>menu icon</strong> (top-left of the toolbar) to collapse or expand the sidebar and get more space for the content.</li>
-      <li><strong>Finding data:</strong> On list pages (User, Customer, Item, etc.), use <strong>Search</strong> and <strong>filters</strong> (Status, dropdowns) then click <strong>Search</strong> or press Enter. Use <strong>Clear</strong> to reset.</li>
-      <li><strong>Sorting and paging:</strong> Click column headers to sort. Use the paginator at the bottom to change page size (e.g. 5, 10, 25, 50) and move between pages.</li>
-      <li><strong>Account:</strong> Click your <strong>Account</strong> (profile) icon in the toolbar to open your profile and update your details or profile image.</li>
-      <li><strong>Logout:</strong> Always use <strong>Logout</strong> when you finish your session to keep your account secure.</li>
+      <li><strong>Sidebar:</strong> Use the <strong>menu icon</strong> (top-left) to collapse or expand the sidebar for more content space.</li>
+      <li><strong>Finding data:</strong> On list pages (User, Customer, Item, Merchant, etc.), use <strong>Search</strong> and <strong>filters</strong> (Status, dropdowns), then click <strong>Search</strong> or press Enter. Use <strong>Clear</strong> to reset filters.</li>
+      <li><strong>Sorting and paging:</strong> Click column headers to sort. Use the paginator at the bottom to set page size (5, 10, 25, 50) and move between pages.</li>
+      <li><strong>Dashboard data:</strong> KPI counts, monthly income, merchant summary, and outlet distribution come from the dashboard APIs. If a section shows zero or dummy data, check that the backend endpoints (e.g. /dashboard/summary, /dashboard/monthly-income, /dashboard/merchant-summary) are available and you are logged in.</li>
+      <li><strong>Account:</strong> Click the <strong>Account</strong> (profile) icon in the toolbar to open your profile. You can view your username, role, and profile image, and use <strong>Change profile image</strong> or <strong>Change password</strong>.</li>
+      <li><strong>Logout:</strong> Use <strong>Logout</strong> when you finish to keep your account secure.</li>
     </ul>
   </mat-card>
 </div>

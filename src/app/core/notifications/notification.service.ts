@@ -5,8 +5,6 @@ import { AuthService } from '../auth/auth.service';
 import { Notification, NotificationApiItem } from './notification.model';
 
 const NOTIFICATIONS_URL = 'http://localhost:9090/find-it/api/notifications';
-/** Notifications page: GET all for user – e.g. http://localhost:8080/api/notifications/user/{userId} */
-const NOTIFICATIONS_PAGE_API = 'http://localhost:8080/api';
 const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 function mapApiItemToNotification(item: NotificationApiItem): Notification {
@@ -76,14 +74,14 @@ export class NotificationService implements OnDestroy {
       );
   }
 
-  /** Fetch all notifications for Notifications page: GET .../api/notifications/user/{userId}. */
+  /** Fetch all notifications: GET .../notifications/user/{userId}. */
   fetchAllNotifications(): Observable<Notification[]> {
     const token = this.auth.token();
     const userId = this.auth.user()?.userId;
     if (!token || userId == null) {
       return of([]);
     }
-    const url = `${NOTIFICATIONS_PAGE_API}/notifications/user/${userId}`;
+    const url = `${NOTIFICATIONS_URL}/user/${userId}`;
     const headers = {
       Accept: 'application/json',
       Authorization: `Bearer ${token}`,

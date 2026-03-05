@@ -78,7 +78,7 @@
         <span matListItemTitle>Notifications</span>
       </a>
 
-      <a mat-list-item routerLink="/dashboard/help" routerLinkActive="active">
+      <a mat-list-item routerLink="/dashboard/help" routerLinkActive="active" class="sidenav-help-item">
         <mat-icon matListItemIcon>help_outline</mat-icon>
         <span matListItemTitle>Help</span>
       </a>
@@ -96,6 +96,9 @@
       <span class="toolbar-spacer"></span>
       <span class="username">Hi, {{ username }}</span>
       <app-notification></app-notification>
+      <a mat-icon-button matTooltip="Help" aria-label="Help" routerLink="/dashboard/help" routerLinkActive="active" class="toolbar-help-btn">
+        <mat-icon>help_outline</mat-icon>
+      </a>
       <button mat-icon-button matTooltip="Profile" aria-label="Profile" (click)="openProfilePopup()">
         <mat-icon>account_circle</mat-icon>
       </button>

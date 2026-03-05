@@ -44,22 +44,39 @@
   .sidenav-menu > a[mat-list-item] {
     background: var(--mat-sys-surface-container-low);
     border: 1px solid var(--mat-sys-outline-variant);
-    border-radius: 0;
+    border-radius: 5px;
     margin-bottom: 0.5rem;
     box-sizing: border-box;
-    color: var(--mat-sys-on-surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    color: #1976d2 !important;
+    font-weight: bold;
+
+    .mat-icon,
+    .mat-mdc-list-item-icon,
+    [matListItemIcon] {
+      color: #1976d2 !important;
+    }
+  }
+
+  :host ::ng-deep .dashboard-sidenav .sidenav-menu > a[mat-list-item] .mdc-list-item__primary-text,
+  :host ::ng-deep .dashboard-sidenav .sidenav-menu > a[mat-list-item] .mat-mdc-list-item-title,
+  :host ::ng-deep .dashboard-sidenav .sidenav-menu > a[mat-list-item] .mdc-list-item {
+    color: #1976d2 !important;
+    font-weight: bold !important;
   }
 
   .sidenav-expansion {
     margin-bottom: 0.5rem;
-    border-radius: 0;
+    border-radius: 5px;
     border: 1px solid var(--mat-sys-outline-variant);
-    box-shadow: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     background: var(--mat-sys-surface-container-low);
 
     .mat-expansion-panel-header {
       padding: 0 1rem;
       height: 48px;
+      font-weight: bold;
+      color: #1976d2;
     }
 
     .mat-expansion-panel-body {
@@ -72,25 +89,51 @@
 
     .sidenav-expansion__icon {
       margin-right: 0.5rem;
-      color: var(--mat-sys-on-surface);
+      color: #1976d2 !important;
+    }
+
+    :host ::ng-deep .sidenav-expansion .mat-expansion-panel-header .mat-content,
+    :host ::ng-deep .sidenav-expansion .mat-expansion-panel-header .mat-expansion-panel-header-title {
+      color: #1976d2 !important;
+      font-weight: bold !important;
     }
   }
 
   .sidenav-sub-item {
     padding-left: 1rem !important;
     font-size: 0.9375rem;
+    font-weight: bold;
     min-height: 40px;
     border: 1px solid var(--mat-sys-outline-variant);
-    border-radius: 4px;
+    border-radius: 5px;
     margin-bottom: 0.25rem;
     background: var(--mat-sys-surface-container);
     box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    color: #1976d2 !important;
+  }
+
+  :host ::ng-deep .dashboard-sidenav .sidenav-sub-item .mdc-list-item__primary-text,
+  :host ::ng-deep .dashboard-sidenav .sidenav-sub-item .mat-mdc-list-item-title,
+  :host ::ng-deep .dashboard-sidenav .sidenav-sub-item .mdc-list-item {
+    color: #1976d2 !important;
+    font-weight: bold !important;
   }
 
   .sidenav-expansion .sidenav-sub-item.active {
     background: #e3f2fd !important;
     color: #1565c0 !important;
-    border-color: #2196f3 !important;
+    border: 1px solid #2196f3 !important;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    font-weight: bold;
+  }
+
+  :host ::ng-deep .dashboard-sidenav .sidenav-sub-item.active .mdc-list-item__primary-text,
+  :host ::ng-deep .dashboard-sidenav .sidenav-sub-item.active .mat-mdc-list-item-title,
+  :host ::ng-deep .dashboard-sidenav .sidenav-sub-item.active .mdc-list-item {
+    color: #1565c0 !important;
+    font-weight: bold !important;
   }
 
   .menu-toggle {
@@ -128,11 +171,13 @@
   }
 
   a[mat-list-item].active {
-    background: #e3f2fd !important; /* light blue */
+    background: #e3f2fd !important;
     color: #1565c0 !important;
     border: 1px solid #2196f3 !important;
-    border-radius: 0;
+    border-radius: 5px;
     box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    font-weight: bold;
   }
 
   a[mat-list-item].active .mat-icon,
@@ -141,10 +186,12 @@
     color: #1565c0 !important;
   }
 
-  /* Force active state into Material's inner list item layer */
+  /* Force active state – text and icon blue */
   :host ::ng-deep .dashboard-sidenav a[mat-list-item].active .mdc-list-item__primary-text,
-  :host ::ng-deep .dashboard-sidenav a[mat-list-item].active .mat-mdc-list-item-title {
+  :host ::ng-deep .dashboard-sidenav a[mat-list-item].active .mat-mdc-list-item-title,
+  :host ::ng-deep .dashboard-sidenav a[mat-list-item].active .mdc-list-item {
     color: #1565c0 !important;
+    font-weight: bold !important;
   }
 
   :host ::ng-deep .dashboard-sidenav a[mat-list-item].active .mdc-list-item {
@@ -153,6 +200,27 @@
 
   a[mat-list-item]:hover {
     background: var(--mat-sys-surface-container-highest);
+  }
+
+  // Help menu item – blue like other menus (same as default and active)
+  .sidenav-help-item:not(.active) {
+    color: #1976d2 !important;
+
+    .mat-icon,
+    [matListItemIcon] {
+      color: #1976d2 !important;
+    }
+  }
+
+  :host ::ng-deep .dashboard-sidenav .sidenav-help-item:not(.active) .mdc-list-item__primary-text,
+  :host ::ng-deep .dashboard-sidenav .sidenav-help-item:not(.active) .mat-mdc-list-item-title,
+  :host ::ng-deep .dashboard-sidenav .sidenav-help-item:not(.active) .mdc-list-item {
+    color: #1976d2 !important;
+  }
+
+  .sidenav-help-item.active .mat-icon,
+  .sidenav-help-item.active [matListItemIcon] {
+    color: #1565c0 !important;
   }
 }
 
@@ -184,9 +252,26 @@
   margin-right: 0.25rem;
 }
 
+// Help icon in toolbar – white to match other header icons
+.toolbar-help-btn {
+  color: #fff !important;
+
+  .mat-icon {
+    color: #fff !important;
+  }
+
+  &:hover .mat-icon {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  &.active .mat-icon {
+    color: #fff !important;
+  }
+}
+
 .toolbar-title {
   margin-left: 0.5rem;
-  font-size: 1.125rem;
+  font-size: 1.5rem;
   font-weight: 600;
 }
 

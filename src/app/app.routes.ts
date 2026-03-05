@@ -7,7 +7,7 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'users/view' },
+      { path: '', pathMatch: 'full', loadComponent: () => import('./dashboard/pages/dashboard-home/dashboard-home.component').then(m => m.DashboardHomeComponent) },
       { path: 'users/view', loadComponent: () => import('./dashboard/pages/view-user/view-user.component').then(m => m.ViewUserComponent) },
       { path: 'customers/view', loadComponent: () => import('./dashboard/pages/view-customer/view-customer.component').then(m => m.ViewCustomerComponent) },
       { path: 'users/add', loadComponent: () => import('./dashboard/pages/add-user/add-user.component').then(m => m.AddUserComponent) },
