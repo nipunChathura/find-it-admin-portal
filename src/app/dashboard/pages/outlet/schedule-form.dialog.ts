@@ -179,14 +179,17 @@ export class ScheduleFormDialogComponent implements OnInit {
   onSubmit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
-    const v = this.form.value;
+    const v = this.form.getRawValue();
+    const dateVal = this.showSingleDate ? this.form.get('date')?.value : null;
+    const startDateVal = this.showDateRange ? this.form.get('startDate')?.value : null;
+    const endDateVal = this.showDateRange ? this.form.get('endDate')?.value : null;
     const baseEntry: Omit<OutletScheduleEntry, 'dayOfWeek'> = {
       id: this.data.entry?.id,
       outletId: this.data.outletId,
       scheduleType: v.scheduleType,
-      date: this.showSingleDate && v.date ? this.toISODate(v.date) : null,
-      startDate: this.showDateRange && v.startDate ? this.toISODate(v.startDate) : null,
-      endDate: this.showDateRange && v.endDate ? this.toISODate(v.endDate) : null,
+      date: this.showSingleDate && dateVal ? this.toISODateLocal(dateVal) : null,
+      startDate: this.showDateRange && startDateVal ? this.toISODateLocal(startDateVal) : null,
+      endDate: this.showDateRange && endDateVal ? this.toISODateLocal(endDateVal) : null,
       openTime: v.openTime,
       closeTime: v.closeTime,
       isClosed: !!v.isClosed,
@@ -208,7 +211,14 @@ export class ScheduleFormDialogComponent implements OnInit {
     }
   }
 
-  private toISODate(d: Date): string {
-    return d instanceof Date ? d.toISOString().slice(0, 10) : String(d).slice(0, 10);
+  /** Format date as YYYY-MM-DD using local date (avoids UTC shifting the day for EMERGENCY/DAILY update). */
+  private toISODateLocal(d: Date | string | null): string {
+    if (d == null) return '';
+    const date = d instanceof Date ? d : new Date(String(d));
+    if (isNaN(date.getTime())) return '';
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 }

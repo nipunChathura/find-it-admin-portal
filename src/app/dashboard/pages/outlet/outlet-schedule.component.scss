@@ -72,6 +72,15 @@
 
 .schedule-page__clear-btn {
   border: 1px solid var(--mat-sys-outline-variant, #79747e);
+  color: #c62828;
+
+  .mdc-button__label {
+    color: #c62828;
+  }
+
+  .mat-icon {
+    color: #c62828;
+  }
 }
 
 .schedule-page__tabs {
