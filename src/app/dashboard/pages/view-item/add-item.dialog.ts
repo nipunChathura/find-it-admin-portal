@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -73,6 +73,7 @@ export class AddItemDialogComponent implements OnInit, OnDestroy {
   private readonly adminCategoriesApi = inject(AdminCategoriesApiService);
   private readonly adminOutletsApi = inject(AdminOutletsApiService);
   private readonly imagesUploadApi = inject(ImagesUploadApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly categorySearchTerm$ = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
@@ -139,6 +140,7 @@ export class AddItemDialogComponent implements OnInit, OnDestroy {
     const reader = new FileReader();
     reader.onload = () => {
       this.itemImage = reader.result as string;
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
   }

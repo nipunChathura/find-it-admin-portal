@@ -42,14 +42,21 @@
   <div class="edit-item-dialog__checkbox">
     <mat-checkbox [(ngModel)]="availability" name="availability">Available</mat-checkbox>
   </div>
-  <div class="edit-item-dialog__field">
+  <div class="edit-item-dialog__field edit-item-dialog__image-wrap">
     <label class="edit-item-dialog__image-label">Item image</label>
     <input #itemFileInput type="file" accept="image/*" (change)="onImageFileSelected($event)" class="edit-item-dialog__file-input" />
-    <button mat-stroked-button type="button" (click)="itemFileInput.click()">Browse</button>
-    @if (selectedItemFile) {
-      <span class="edit-item-dialog__file-name">Selected: {{ selectedItemFile.name }}</span>
+    <button mat-stroked-button type="button" (click)="itemFileInput.click()">Select image</button>
+    @if (selectedFilePreviewUrl) {
+      <div class="edit-item-dialog__preview">
+        <img [src]="selectedFilePreviewUrl" alt="Selected preview" class="edit-item-dialog__preview-img" />
+        <span class="edit-item-dialog__file-name">Selected: {{ selectedItemFile?.name }}</span>
+        <button mat-button type="button" (click)="clearSelectedImage(itemFileInput)">Remove image</button>
+      </div>
     } @else if (itemImage) {
-      <span class="edit-item-dialog__file-name">Current: {{ itemImage }}</span>
+      <div class="edit-item-dialog__preview">
+        <app-api-image type="item" [pathOrFileName]="itemImage" alt="Current item" imgClass="edit-item-dialog__preview-img" />
+        <span class="edit-item-dialog__file-name">Current: {{ itemImage }}</span>
+      </div>
     }
   </div>
   <mat-form-field appearance="outline" class="edit-item-dialog__field">

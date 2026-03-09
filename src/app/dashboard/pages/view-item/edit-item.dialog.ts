@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -13,6 +13,7 @@ import { debounceTime, switchMap, map, takeUntil } from 'rxjs/operators';
 import { AdminCategoriesApiService } from '../../../core/api/admin-categories.api';
 import { CategoryRow } from '../../../core/api/admin-categories.api';
 import { ImagesUploadApiService } from '../../../core/api/images-upload.api';
+import { ApiImageComponent } from '../../../shared/api-image/api-image.component';
 
 export interface EditItemDialogData {
   id: number;
@@ -62,6 +63,7 @@ const CATEGORY_SEARCH_LIMIT = 10;
     MatAutocompleteModule,
     MatCheckboxModule,
     MatButtonModule,
+    ApiImageComponent,
   ],
   templateUrl: './edit-item.dialog.html',
   styles: [
@@ -75,6 +77,9 @@ const CATEGORY_SEARCH_LIMIT = 10;
     '.edit-item-dialog__image-label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: var(--mat-sys-on-surface-variant); }',
     '.edit-item-dialog__file-input { display: none; }',
     '.edit-item-dialog__file-name { display: block; margin-top: 0.25rem; font-size: 0.8rem; color: var(--mat-sys-on-surface-variant); }',
+    '.edit-item-dialog__image-wrap { margin-top: 0.5rem; }',
+    '.edit-item-dialog__preview { margin-top: 0.5rem; }',
+    '.edit-item-dialog__preview-img { max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; display: block; }',
   ],
 })
 export class EditItemDialogComponent implements OnInit, OnDestroy {
@@ -82,6 +87,7 @@ export class EditItemDialogComponent implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<EditItemDialogComponent>);
   private readonly categoriesApi = inject(AdminCategoriesApiService);
   private readonly imagesUploadApi = inject(ImagesUploadApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly categorySearchTerm$ = new Subject<string>();
   private readonly destroy$ = new Subject<void>();
 
@@ -96,6 +102,8 @@ export class EditItemDialogComponent implements OnInit, OnDestroy {
   availability: boolean;
   itemImage: string;
   selectedItemFile: File | null = null;
+  /** Data URL for preview when user selects a new file (FileReader result). */
+  selectedFilePreviewUrl: string | null = null;
   saving = false;
   status: string;
 
@@ -143,6 +151,18 @@ export class EditItemDialogComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
     this.selectedItemFile = file;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.selectedFilePreviewUrl = reader.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearSelectedImage(fileInput: HTMLInputElement | null): void {
+    this.selectedItemFile = null;
+    this.selectedFilePreviewUrl = null;
+    if (fileInput) fileInput.value = '';
   }
 
   onUpdate(): void {

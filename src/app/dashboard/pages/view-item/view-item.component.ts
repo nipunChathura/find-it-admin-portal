@@ -247,7 +247,7 @@ export class ViewItemComponent implements AfterViewInit {
 
   onRowClick(row: ViewItemRow): void {
     this.dialog.open(ItemDetailDialogComponent, {
-      width: '480px',
+      width: '560px',
       data: { ...row },
     });
   }
