@@ -1,0 +1,81 @@
+<div class="notification-widget" (click)="$event.stopPropagation()">
+  <button
+    mat-icon-button
+    type="button"
+    class="notification-trigger"
+    [matTooltip]="'Notifications'"
+    (click)="toggle()"
+    aria-label="Notifications"
+    aria-haspopup="true"
+    [attr.aria-expanded]="isOpen()"
+  >
+    <mat-icon>notifications</mat-icon>
+    @if (unreadCount() > 0) {
+      <span class="notification-badge" [attr.aria-label]="unreadCount() + ' unread'">
+        {{ unreadCount() > 99 ? '99+' : unreadCount() }}
+      </span>
+    }
+  </button>
+
+  @if (isOpen()) {
+    <div
+      class="notification-panel"
+      [@dropdown]="'open'"
+      role="dialog"
+      aria-label="Notification list"
+    >
+      <div class="notification-panel-header">
+        <h3 class="notification-panel-title">Notifications</h3>
+        @if (unreadCount() > 0) {
+          <button mat-button class="notification-mark-all" type="button" (click)="markAllAsRead()">
+            Mark all as read
+          </button>
+        }
+      </div>
+
+      <div class="notification-list">
+        @if (list().length === 0) {
+          <div class="notification-empty">
+            <mat-icon>notifications_none</mat-icon>
+            <p>No notifications</p>
+          </div>
+        } @else {
+          @for (n of list(); track n.id) {
+            <div
+              class="notification-item"
+              [class.notification-item--unread]="!n.isRead"
+              [class]="'notification-item ' + getTypeColorClass(n.type)"
+            >
+              <span class="notification-item-icon" [attr.aria-hidden]="true">
+                <mat-icon [class]="'notification-type-icon--' + n.type">{{ getTypeIcon(n.type) }}</mat-icon>
+              </span>
+              <div class="notification-item-body">
+                <span class="notification-item-title">{{ n.title }}</span>
+                <p class="notification-item-message">{{ n.message }}</p>
+                <span class="notification-item-time">{{ formatTime(n.createdAt) }}</span>
+              </div>
+              @if (!n.isRead) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="notification-item-action"
+                  matTooltip="Mark as read"
+                  (click)="markAsRead(n, $event)"
+                  aria-label="Mark as read"
+                >
+                  <mat-icon>done</mat-icon>
+                </button>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <div class="notification-panel-footer">
+        <a mat-button routerLink="/dashboard/notifications" (click)="viewAll()">
+          View All
+        </a>
+      </div>
+    </div>
+  }
+</div>

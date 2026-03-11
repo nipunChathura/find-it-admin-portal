@@ -10,6 +10,7 @@ export type CategoryType = 'ITEM' | 'SERVICE';
 export interface CategoryRow {
   id: number;
   name: string;
+  categoryDescription?: string;
   categoryType: CategoryType;
   status: string;
   createdDate: string;
@@ -19,6 +20,7 @@ export interface CategoryRow {
 export interface CategoryApiItem {
   categoryId?: number;
   categoryName?: string;
+  categoryDescription?: string;
   categoryStatus?: string;
   categoryType?: string;
   createdDatetime?: string;
@@ -38,6 +40,7 @@ function mapApiItemToRow(item: CategoryApiItem): CategoryRow {
   return {
     id: Number(id),
     name: String(item.categoryName ?? ''),
+    categoryDescription: item.categoryDescription != null ? String(item.categoryDescription) : undefined,
     categoryType: categoryType === 'SERVICE' ? 'SERVICE' : 'ITEM',
     status: String(item.categoryStatus ?? item.status ?? 'ACTIVE'),
     createdDate: createdStr,
@@ -96,10 +99,13 @@ export class AdminCategoriesApiService {
   }
 
   /**
-   * POST create category. Replace with real endpoint when backend provides it.
+   * POST create category.
+   * Payload: { categoryName, categoryDescription, categoryImage, categoryType, status }
    */
   createCategory(body: {
-    name: string;
+    categoryName: string;
+    categoryDescription: string;
+    categoryImage: string | null;
     categoryType: CategoryType;
     status: string;
   }): Observable<CategoryRow> {
@@ -111,17 +117,31 @@ export class AdminCategoriesApiService {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
+    const payload = {
+      categoryName: body.categoryName.trim(),
+      categoryDescription: body.categoryDescription?.trim() ?? '',
+      categoryImage: body.categoryImage ?? null,
+      categoryType: body.categoryType,
+      status: body.status,
+    };
     return this.http
-      .post<CategoryApiItem>(CATEGORIES_URL, body, { headers })
+      .post<CategoryApiItem>(CATEGORIES_URL, payload, { headers })
       .pipe(map(mapApiItemToRow));
   }
 
   /**
-   * PUT update category by id. Replace with real endpoint when backend provides it.
+   * PUT update category by id.
+   * Payload: { categoryName, categoryDescription, categoryImage, categoryType, status }
    */
   updateCategory(
     id: number,
-    body: { name: string; categoryType: CategoryType; status: string }
+    body: {
+      categoryName: string;
+      categoryDescription: string;
+      categoryImage: string | null;
+      categoryType: CategoryType;
+      status: string;
+    }
   ): Observable<CategoryRow> {
     const token = this.auth.token();
     if (!token) {
@@ -132,8 +152,15 @@ export class AdminCategoriesApiService {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
+    const payload = {
+      categoryName: body.categoryName.trim(),
+      categoryDescription: body.categoryDescription?.trim() ?? '',
+      categoryImage: body.categoryImage ?? null,
+      categoryType: body.categoryType,
+      status: body.status,
+    };
     return this.http
-      .put<CategoryApiItem>(url, body, { headers })
+      .put<CategoryApiItem>(url, payload, { headers })
       .pipe(map(mapApiItemToRow));
   }
 

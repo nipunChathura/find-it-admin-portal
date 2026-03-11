@@ -1,0 +1,215 @@
+.view-customers {
+  padding: 0;
+}
+
+.view-customers__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.view-customers__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--mat-sys-primary);
+}
+
+.view-customers__add-btn {
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  mat-icon {
+    margin-right: 0.25rem;
+    vertical-align: middle;
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.view-customers__card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.view-customers__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.view-customers__status {
+  width: 160px;
+  min-width: 140px;
+}
+
+.view-customers__search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.view-customers__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+
+  button {
+    border: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.view-customers__actions button mat-icon {
+  margin-right: 0.25rem;
+  vertical-align: middle;
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.view-customers__clear-btn {
+  color: #c62828;
+
+  .mdc-button__label {
+    color: #c62828;
+  }
+
+  .mat-icon {
+    color: #c62828;
+  }
+}
+
+.view-customers__table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.view-customers__table {
+  width: 100%;
+}
+
+.view-customers__status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: var(--mat-sys-surface-container-highest);
+  color: var(--mat-sys-on-surface);
+
+  &.view-customers__status-badge--active {
+    background: #e8f5e9;
+    color: #1b5e20;
+  }
+  &.view-customers__status-badge--inactive {
+    background: #eceff1;
+    color: #455a64;
+  }
+  &.view-customers__status-badge--pending {
+    background: #fff8e1;
+    color: #f57f17;
+  }
+  &.view-customers__status-badge--default {
+    background: var(--mat-sys-surface-container-highest);
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.view-customers__actions-cell {
+  white-space: nowrap;
+  padding-inline: 0.5rem;
+
+  button {
+    margin-inline: 0.125rem;
+  }
+}
+
+.view-customers__action-btn {
+  .mat-icon {
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &:hover .mat-icon,
+  &:focus-visible .mat-icon {
+    color: var(--mat-sys-primary);
+  }
+
+  &.view-customers__action-btn--edit .mat-icon {
+    color: #1565c0;
+  }
+  &.view-customers__action-btn--edit:hover .mat-icon,
+  &.view-customers__action-btn--edit:focus-visible .mat-icon {
+    color: #0d47a1;
+  }
+
+  &.view-customers__action-btn--delete .mat-icon {
+    color: #c62828;
+  }
+  &.view-customers__action-btn--delete:hover .mat-icon,
+  &.view-customers__action-btn--delete:focus-visible .mat-icon {
+    color: #b71c1c;
+  }
+}
+
+.view-customers__action-btn {
+  .mat-icon {
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &:hover .mat-icon,
+  &:focus-visible .mat-icon {
+    color: var(--mat-sys-primary);
+  }
+
+  &.view-customers__action-btn--edit .mat-icon {
+    color: #1565c0;
+  }
+  &.view-customers__action-btn--edit:hover .mat-icon,
+  &.view-customers__action-btn--edit:focus-visible .mat-icon {
+    color: #0d47a1;
+  }
+
+  &.view-customers__action-btn--delete .mat-icon {
+    color: #c62828;
+  }
+  &.view-customers__action-btn--delete:hover .mat-icon,
+  &.view-customers__action-btn--delete:focus-visible .mat-icon {
+    color: #b71c1c;
+  }
+}
+
+.view-customers__no-data {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+mat-paginator {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+@media (max-width: 600px) {
+  .view-customers__filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .view-customers__status {
+    width: 100%;
+  }
+
+  .view-customers__search {
+    max-width: none;
+  }
+
+  .view-customers__actions {
+    justify-content: flex-end;
+  }
+}
+

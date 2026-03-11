@@ -100,10 +100,10 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef class="schedule-page__actions-header">Actions</th>
           <td mat-cell *matCellDef="let row" class="schedule-page__actions-cell">
-            <button mat-icon-button matTooltip="Edit" (click)="onEdit(row)" type="button" aria-label="Edit schedule">
+            <button mat-icon-button class="schedule-page__btn-edit" matTooltip="Edit" (click)="onEdit(row)" type="button" aria-label="Edit schedule">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button matTooltip="Delete" (click)="onDelete(row)" type="button" aria-label="Delete schedule">
+            <button mat-icon-button class="schedule-page__btn-remove" matTooltip="Delete" (click)="onDelete(row)" type="button" aria-label="Delete schedule">
               <mat-icon>delete</mat-icon>
             </button>
           </td>

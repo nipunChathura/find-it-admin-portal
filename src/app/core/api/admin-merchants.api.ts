@@ -7,9 +7,14 @@ const ADMIN_MERCHANTS_URL = 'http://localhost:9090/find-it/api/admin/merchants';
 
 export type MerchantType = 'FREE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
 
+/** Record type from API: MERCHANT (main) or SUB_MERCHANT. */
+export type MerchantRecordType = 'MERCHANT' | 'SUB_MERCHANT';
+
 export interface MerchantRow {
   merchantId: number;
+  subMerchantId: number | null;
   merchantName: string;
+  username: string;
   merchantEmail: string;
   merchantNic: string;
   merchantProfileImage: string;
@@ -18,6 +23,8 @@ export interface MerchantRow {
   merchantType: MerchantType;
   merchantStatus: string;
   parentMerchantName: string;
+  /** MERCHANT or SUB_MERCHANT from API type field. */
+  recordType: MerchantRecordType;
 }
 
 /** Raw merchant item from GET admin merchants API. */
@@ -43,6 +50,8 @@ export interface MerchantApiItem {
   type?: string;
   parentMerchantName?: string;
   subMerchantId?: number;
+  /** Status of sub-merchant when API returns sub-merchant rows. */
+  subMerchantStatus?: string;
   [key: string]: unknown;
 }
 
@@ -61,7 +70,9 @@ function mapApiItemToRow(item: MerchantApiItem): MerchantRow {
   const merchantType = validTypes.includes(type) ? type : 'FREE';
   return {
     merchantId: Number(id),
+    subMerchantId: item.subMerchantId ?? null,
     merchantName: String(item.merchantName ?? item.name ?? ''),
+    username: String(item.username ?? ''),
     merchantEmail: String(item.merchantEmail ?? item.email ?? ''),
     merchantNic: String(item.merchantNic ?? item.nic ?? ''),
     merchantProfileImage: String(item.merchantProfileImage ?? ''),
@@ -70,11 +81,19 @@ function mapApiItemToRow(item: MerchantApiItem): MerchantRow {
       item.merchantPhoneNumber ?? item.phoneNumber ?? item.phone ?? ''
     ),
     merchantType,
-    merchantStatus: String(item.merchantStatus ?? item.status ?? 'ACTIVE'),
+    merchantStatus: String(
+      item.merchantStatus ?? item.status ?? item.subMerchantStatus ?? 'ACTIVE'
+    ),
     parentMerchantName: String(
       item.parentMerchantName ?? item['peirentMercahntName'] ?? ''
     ),
+    recordType: mapRecordType(item.type),
   };
+}
+
+function mapRecordType(type: string | undefined): MerchantRecordType {
+  const t = (type ?? '').toUpperCase();
+  return t === 'SUB_MERCHANT' ? 'SUB_MERCHANT' : 'MERCHANT';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -136,8 +155,20 @@ export class AdminMerchantsApiService {
 
   /**
    * POST create merchant.
+   * Body: parentMerchantId (null = main merchant, number = sub-merchant), merchantName, merchantEmail, merchantAddress, merchantNic, merchantPhoneNumber, merchantProfileImage, merchantType, password, username.
    */
-  createMerchant(body: Omit<MerchantRow, 'merchantId'>): Observable<MerchantRow> {
+  createMerchant(body: {
+    parentMerchantId: number | null;
+    merchantName: string;
+    merchantEmail: string;
+    merchantAddress: string;
+    merchantNic: string;
+    merchantPhoneNumber: string;
+    merchantProfileImage: string | null;
+    merchantType: MerchantType;
+    password: string;
+    username: string;
+  }): Observable<MerchantRow> {
     const token = this.auth.token();
     if (!token) {
       return of({} as MerchantRow);
@@ -185,5 +216,60 @@ export class AdminMerchantsApiService {
       Authorization: `Bearer ${token}`,
     };
     return this.http.delete<void>(url, { headers });
+  }
+
+  /**
+   * PUT approve merchant by id.
+   * Calls PUT .../admin/merchants/approval/{merchantId}
+   */
+  approveMerchant(merchantId: number): Observable<unknown> {
+    const token = this.auth.token();
+    if (!token) {
+      return of(null);
+    }
+    const url = `${ADMIN_MERCHANTS_URL}/approval/${merchantId}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    };
+    return this.http.put(url, {}, { headers });
+  }
+
+  /**
+   * PUT reject merchant by id with reason.
+   * Calls PUT .../admin/merchants/reject/{merchantId} with body { reason }
+   */
+  rejectMerchant(merchantId: number, reason: string): Observable<unknown> {
+    const token = this.auth.token();
+    if (!token) {
+      return of(null);
+    }
+    const url = `${ADMIN_MERCHANTS_URL}/reject/${merchantId}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    };
+    return this.http.put(url, { reason: reason.trim() }, { headers });
+  }
+
+  /**
+   * PUT reject sub-merchant by parent and sub IDs with reason.
+   * Calls PUT .../admin/merchants/{merchantId}/sub-merchants/{subMerchantId}/reject with body { reason }.
+   */
+  rejectSubMerchant(
+    merchantId: number,
+    subMerchantId: number,
+    reason: string
+  ): Observable<unknown> {
+    const token = this.auth.token();
+    if (!token) {
+      return of(null);
+    }
+    const url = `${ADMIN_MERCHANTS_URL}/${merchantId}/sub-merchants/${subMerchantId}/reject`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    };
+    return this.http.put(url, { reason: reason.trim() }, { headers });
   }
 }
