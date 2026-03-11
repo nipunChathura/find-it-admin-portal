@@ -12,12 +12,20 @@ export type CategoryType = 'ITEM' | 'SERVICE';
 export interface EditCategoryDialogData {
   id: number;
   name: string;
+  categoryDescription?: string;
   categoryType: CategoryType;
   status: string;
   createdDate: string;
 }
 
-export type EditCategoryDialogResult = EditCategoryDialogData;
+export interface EditCategoryDialogResult {
+  id: number;
+  categoryName: string;
+  categoryDescription: string;
+  categoryImage: string | null;
+  categoryType: CategoryType;
+  status: string;
+}
 
 const STATUS_OPTIONS = [
   { value: 'ACTIVE', label: 'ACTIVE' },
@@ -49,7 +57,11 @@ const CATEGORY_TYPE_OPTIONS = [
       </p>
       <mat-form-field appearance="outline" class="edit-category-dialog__field">
         <mat-label>Category Name</mat-label>
-        <input matInput [(ngModel)]="name" name="name" />
+        <input matInput [(ngModel)]="categoryName" name="categoryName" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="edit-category-dialog__field">
+        <mat-label>Category Description</mat-label>
+        <input matInput [(ngModel)]="categoryDescription" name="categoryDescription" />
       </mat-form-field>
       <mat-form-field appearance="outline" class="edit-category-dialog__field">
         <mat-label>Category Type</mat-label>
@@ -90,12 +102,15 @@ export class EditCategoryDialogComponent {
 
   readonly statusOptions = STATUS_OPTIONS;
   readonly categoryTypeOptions = CATEGORY_TYPE_OPTIONS;
-  name: string;
+  categoryName: string;
+  categoryDescription: string;
+  categoryImage: string | null = null;
   categoryType: CategoryType;
   status: string;
 
   constructor() {
-    this.name = this.data.name;
+    this.categoryName = this.data.name;
+    this.categoryDescription = this.data.categoryDescription ?? '';
     this.categoryType = this.data.categoryType;
     this.status = this.data.status;
   }
@@ -103,10 +118,11 @@ export class EditCategoryDialogComponent {
   onUpdate(): void {
     this.dialogRef.close({
       id: this.data.id,
-      name: this.name.trim(),
+      categoryName: this.categoryName.trim(),
+      categoryDescription: this.categoryDescription.trim(),
+      categoryImage: this.categoryImage,
       categoryType: this.categoryType,
       status: this.status,
-      createdDate: this.data.createdDate,
     });
   }
 }

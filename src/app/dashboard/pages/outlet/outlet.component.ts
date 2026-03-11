@@ -12,11 +12,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { AdminOutletsApiService, OutletRow, OutletTableItem } from '../../../core/api/admin-outlets.api';
 import { DeleteOutletConfirmDialogComponent } from './delete-outlet-confirm.dialog';
 import { EditOutletDialogComponent, EditOutletDialogResult } from './edit-outlet.dialog';
 import { AddOutletDialogComponent, AddOutletDialogResult } from './add-outlet.dialog';
+import { OutletDetailDialogComponent } from './outlet-detail.dialog';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -48,7 +49,6 @@ const OUTLET_TYPE_OPTIONS = [
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './outlet.component.html',
   styleUrl: './outlet.component.scss',
@@ -60,7 +60,6 @@ export class OutletComponent implements AfterViewInit {
   readonly statusOptions = STATUS_OPTIONS;
   readonly outletTypeOptions = OUTLET_TYPE_OPTIONS;
   readonly displayedColumns: string[] = [
-    'expand',
     'actions',
     'outletId',
     'outletName',
@@ -68,6 +67,7 @@ export class OutletComponent implements AfterViewInit {
     'outletPhone',
     'outletType',
     'merchantName',
+    'subMerchantName',
     'status',
   ];
 
@@ -76,30 +76,13 @@ export class OutletComponent implements AfterViewInit {
   searchText = '';
   dataSource = new MatTableDataSource<OutletTableItem>([]);
   private allData: OutletTableItem[] = [];
-  expandedIds = new Set<number>();
 
   constructor(
     private readonly dialog: MatDialog,
     private readonly outletsApi: AdminOutletsApiService,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {
     this.loadOutlets();
-  }
-
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      panelClass: ['snackbar-success'],
-      verticalPosition: 'top',
-    });
-  }
-
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
   }
 
   onAddOutlet(): void {
@@ -112,26 +95,12 @@ export class OutletComponent implements AfterViewInit {
       if (!result) return;
       this.outletsApi.createOutletWithPayload(result).subscribe({
         next: () => {
-          this.showSuccess('Outlet added successfully.');
+          this.snackbar.showSuccess('Outlet added successfully.');
           this.loadOutlets();
         },
-        error: () => this.showError('Failed to add outlet.'),
+        error: () => this.snackbar.showError('Failed to add outlet.'),
       });
     });
-  }
-
-  toggleExpand(item: OutletTableItem): void {
-    const id = item.row.outletId;
-    if (this.expandedIds.has(id)) {
-      this.expandedIds.delete(id);
-    } else {
-      this.expandedIds.add(id);
-    }
-    this.expandedIds = new Set(this.expandedIds);
-  }
-
-  isExpanded(item: OutletTableItem): boolean {
-    return this.expandedIds.has(item.row.outletId);
   }
 
   onEdit(item: OutletTableItem): void {
@@ -146,11 +115,20 @@ export class OutletComponent implements AfterViewInit {
       const { outletId, ...body } = result;
       this.outletsApi.updateOutletWithPayload(outletId, body).subscribe({
         next: () => {
-          this.showSuccess('Outlet updated successfully.');
+          this.snackbar.showSuccess('Outlet updated successfully.');
           this.loadOutlets();
         },
-        error: () => this.showError('Failed to update outlet.'),
+        error: () => this.snackbar.showError('Failed to update outlet.'),
       });
+    });
+  }
+
+  onViewDetails(item: OutletTableItem): void {
+    this.dialog.open(OutletDetailDialogComponent, {
+      width: '520px',
+      maxHeight: '90vh',
+      data: { item },
+      disableClose: false,
     });
   }
 
@@ -164,10 +142,10 @@ export class OutletComponent implements AfterViewInit {
       if (!confirmed) return;
       this.outletsApi.deleteOutlet(item.row.outletId).subscribe({
         next: () => {
-          this.showSuccess('Outlet deleted successfully.');
+          this.snackbar.showSuccess('Outlet deleted successfully.');
           this.loadOutlets();
         },
-        error: () => this.showError('Failed to delete outlet.'),
+        error: () => this.snackbar.showError('Failed to delete outlet.'),
       });
     });
   }
@@ -199,6 +177,8 @@ export class OutletComponent implements AfterViewInit {
           return (row.outletType ?? '').toLowerCase();
         case 'merchantName':
           return (row.merchantName ?? '').toLowerCase();
+        case 'subMerchantName':
+          return (row.subMerchantName ?? '').toLowerCase();
         case 'status':
           return row.status ?? '';
         default:

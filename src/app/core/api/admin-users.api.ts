@@ -182,4 +182,21 @@ export class AdminUsersApiService {
     };
     return this.http.put(url, {}, { headers });
   }
+
+  /**
+   * PUT reject user by id with reason.
+   * Calls PUT .../admin/users/reject/{userId} with body { reason }
+   */
+  rejectUser(userId: number, reason: string): Observable<unknown> {
+    const token = this.auth.token();
+    if (!token) {
+      return of(null);
+    }
+    const url = `${ADMIN_USERS_URL}/reject/${userId}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    };
+    return this.http.put(url, { reason: reason.trim() }, { headers });
+  }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -6,19 +6,28 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Observable, Subject, of } from 'rxjs';
 import { debounceTime, switchMap, map, takeUntil } from 'rxjs/operators';
 import { MerchantRow, MerchantType } from '../../../core/api/admin-merchants.api';
 import { AdminMerchantsApiService } from '../../../core/api/admin-merchants.api';
+import { ImagesUploadApiService } from '../../../core/api/images-upload.api';
 
-export type AddMerchantDialogResult = Omit<MerchantRow, 'merchantId'>;
-
-const STATUS_OPTIONS = [
-  { value: 'ACTIVE', label: 'ACTIVE' },
-  { value: 'INACTIVE', label: 'INACTIVE' },
-];
+/** Create merchant API body: parentMerchantId null = main merchant, number = sub-merchant. */
+export interface AddMerchantDialogResult {
+  parentMerchantId: number | null;
+  merchantName: string;
+  merchantEmail: string;
+  merchantAddress: string;
+  merchantNic: string;
+  merchantPhoneNumber: string;
+  merchantProfileImage: string | null;
+  merchantType: MerchantType;
+  password: string;
+  username: string;
+}
 
 const MERCHANT_TYPE_OPTIONS = [
   { value: 'FREE', label: 'FREE' },
@@ -41,6 +50,7 @@ const PARENT_SEARCH_RESULT_LIMIT = 5;
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatIconModule,
     MatButtonToggleModule,
     MatAutocompleteModule,
   ],
@@ -87,6 +97,17 @@ const PARENT_SEARCH_RESULT_LIMIT = 5;
         <input matInput [(ngModel)]="merchantName" name="merchantName" required />
       </mat-form-field>
       <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Username</mat-label>
+        <input matInput [(ngModel)]="username" name="username" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
+        <mat-label>Password</mat-label>
+        <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="password" name="password" />
+        <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword" tabindex="-1" aria-label="Toggle password visibility">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
         <mat-label>Email</mat-label>
         <input matInput type="email" [(ngModel)]="merchantEmail" name="merchantEmail" />
       </mat-form-field>
@@ -102,10 +123,18 @@ const PARENT_SEARCH_RESULT_LIMIT = 5;
         <mat-label>Address</mat-label>
         <input matInput [(ngModel)]="merchantAddress" name="merchantAddress" />
       </mat-form-field>
-      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
-        <mat-label>Profile Image URL</mat-label>
-        <input matInput [(ngModel)]="merchantProfileImage" name="merchantProfileImage" />
-      </mat-form-field>
+      <div class="add-merchant-dialog__field add-merchant-dialog__image-block">
+        <label class="add-merchant-dialog__label">Merchant profile image (optional)</label>
+        <input #addProfileInput type="file" accept="image/*" (change)="onImageSelected($event)" class="add-merchant-dialog__file-input" />
+        <button mat-stroked-button type="button" (click)="addProfileInput.click()">Browse</button>
+        @if (merchantProfileImage) {
+          <div class="add-merchant-dialog__preview-wrap">
+            <span class="add-merchant-dialog__preview-label">Selected image:</span>
+            <img [src]="merchantProfileImage" alt="Selected" class="add-merchant-dialog__preview-img" />
+            <button mat-stroked-button type="button" (click)="clearImage()">Remove image</button>
+          </div>
+        }
+      </div>
       <mat-form-field appearance="outline" class="add-merchant-dialog__field">
         <mat-label>Merchant Type</mat-label>
         <mat-select [(ngModel)]="merchantType" name="merchantType">
@@ -114,18 +143,10 @@ const PARENT_SEARCH_RESULT_LIMIT = 5;
           }
         </mat-select>
       </mat-form-field>
-      <mat-form-field appearance="outline" class="add-merchant-dialog__field">
-        <mat-label>Status</mat-label>
-        <mat-select [(ngModel)]="merchantStatus" name="merchantStatus">
-          @for (opt of statusOptions; track opt.value) {
-            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn">Cancel</button>
-      <button mat-raised-button color="primary" (click)="onSave()" type="button">Save</button>
+      <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn" [disabled]="saving">Cancel</button>
+      <button mat-raised-button color="primary" (click)="onSave()" type="button" [disabled]="saving">{{ saving ? 'Uploading...' : 'Save' }}</button>
     </mat-dialog-actions>
   `,
   styles: [
@@ -136,16 +157,22 @@ const PARENT_SEARCH_RESULT_LIMIT = 5;
       mat-dialog-actions { padding-top: 0.5rem; gap: 0.5rem; }
       mat-dialog-actions button { border: 1px solid var(--mat-sys-outline-variant); }
       .dialog-cancel-btn { color: #c62828; }
+      .add-merchant-dialog__image-block .add-merchant-dialog__label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--mat-sys-on-surface-variant); }
+      .add-merchant-dialog__file-input { display: none; }
+      .add-merchant-dialog__preview-wrap { margin-top: 0.75rem; }
+      .add-merchant-dialog__preview-label { display: block; font-size: 0.875rem; margin-bottom: 0.25rem; }
+      .add-merchant-dialog__preview-img { max-width: 160px; max-height: 120px; object-fit: contain; display: block; margin-bottom: 0.5rem; border-radius: 4px; }
     `,
   ],
 })
 export class AddMerchantDialogComponent implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<AddMerchantDialogComponent>);
   private readonly merchantsApi = inject(AdminMerchantsApiService);
+  private readonly imagesUploadApi = inject(ImagesUploadApiService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
   private readonly parentSearchTerm$ = new Subject<string>();
 
-  readonly statusOptions = STATUS_OPTIONS;
   readonly merchantTypeOptions = MERCHANT_TYPE_OPTIONS;
 
   isSubMerchant = false;
@@ -153,14 +180,19 @@ export class AddMerchantDialogComponent implements OnInit, OnDestroy {
   parentSearchResults$!: Observable<MerchantRow[]>;
 
   merchantName = '';
+  username = '';
+  password = '';
   merchantEmail = '';
   merchantNic = '';
   merchantProfileImage = '';
+  selectedMerchantFile: File | null = null;
+  saving = false;
   merchantAddress = '';
   merchantPhoneNumber = '';
   merchantType: MerchantType = 'FREE';
-  merchantStatus = 'ACTIVE';
   parentMerchantName = '';
+  parentMerchantId: number | null = null;
+  hidePassword = true;
 
   ngOnInit(): void {
     this.parentSearchResults$ = this.parentSearchTerm$.pipe(
@@ -189,6 +221,7 @@ export class AddMerchantDialogComponent implements OnInit, OnDestroy {
     if (!this.isSubMerchant) {
       this.parentMerchantSearchText = '';
       this.parentMerchantName = '';
+      this.parentMerchantId = null;
     }
   }
 
@@ -199,22 +232,56 @@ export class AddMerchantDialogComponent implements OnInit, OnDestroy {
   onParentSelected(event: { option: { value: MerchantRow } }): void {
     const m = event.option?.value;
     if (m) {
+      this.parentMerchantId = m.merchantId;
       this.parentMerchantName = m.merchantName ?? '';
       this.parentMerchantSearchText = this.parentMerchantName;
     }
   }
 
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    this.selectedMerchantFile = file;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.merchantProfileImage = reader.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearImage(): void {
+    this.merchantProfileImage = '';
+    this.selectedMerchantFile = null;
+  }
+
   onSave(): void {
-    this.dialogRef.close({
+    const buildResult = (profileImageValue: string | null) => ({
+      parentMerchantId: this.isSubMerchant ? this.parentMerchantId : null,
       merchantName: this.merchantName.trim(),
       merchantEmail: this.merchantEmail.trim(),
-      merchantNic: this.merchantNic.trim(),
-      merchantProfileImage: this.merchantProfileImage.trim(),
       merchantAddress: this.merchantAddress.trim(),
+      merchantNic: this.merchantNic.trim(),
       merchantPhoneNumber: this.merchantPhoneNumber.trim(),
+      merchantProfileImage: profileImageValue,
       merchantType: this.merchantType,
-      merchantStatus: this.merchantStatus,
-      parentMerchantName: this.isSubMerchant ? this.parentMerchantName.trim() : '',
+      password: this.password || '',
+      username: this.username.trim(),
     });
+    if (this.selectedMerchantFile) {
+      this.saving = true;
+      this.imagesUploadApi.upload(this.selectedMerchantFile, 'merchant').subscribe({
+        next: (res) => {
+          this.saving = false;
+          const imageValue = res?.relativePath || res?.fileName || null;
+          this.dialogRef.close(buildResult(imageValue));
+        },
+        error: () => { this.saving = false; },
+      });
+    } else {
+      const profileImage = (this.merchantProfileImage || '').trim();
+      this.dialogRef.close(buildResult(profileImage || null));
+    }
   }
 }

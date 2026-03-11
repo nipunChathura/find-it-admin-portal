@@ -1,0 +1,147 @@
+.outlet-payment-page {
+  padding: 0;
+}
+
+.outlet-payment-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.outlet-payment-page__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--mat-sys-primary);
+}
+
+.outlet-payment-page__add-btn mat-icon {
+  margin-right: 0.25rem;
+  vertical-align: middle;
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.outlet-payment-page__card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.outlet-payment-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.outlet-payment-page__outlet {
+  min-width: 200px;
+  width: 220px;
+}
+
+.outlet-payment-page__status {
+  width: 160px;
+  min-width: 140px;
+}
+
+.outlet-payment-page__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.outlet-payment-page__actions button mat-icon {
+  margin-right: 0.25rem;
+  vertical-align: middle;
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.outlet-payment-page__clear-btn {
+  color: #c62828;
+
+  .mdc-button__label {
+    color: #c62828;
+  }
+}
+
+.outlet-payment-page__clear-btn .mat-icon {
+  color: #c62828;
+}
+
+.outlet-payment-page__table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.outlet-payment-page__table {
+  width: 100%;
+}
+
+.outlet-payment-page__status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: var(--mat-sys-surface-container-highest);
+  color: var(--mat-sys-on-surface);
+}
+
+.outlet-payment-page__status-badge--paid {
+  background: #e8f5e9;
+  color: #1b5e20;
+}
+
+.outlet-payment-page__status-badge--pending {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.outlet-payment-page__status-badge--failed {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.outlet-payment-page__status-badge--default {
+  background: var(--mat-sys-surface-container-highest);
+  color: var(--mat-sys-on-surface);
+}
+
+.outlet-payment-page__no-data {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.outlet-payment-page__table-wrap mat-paginator {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+.outlet-payment-page__actions-cell {
+  white-space: nowrap;
+}
+
+.outlet-payment-page__actions-cell button {
+  margin-inline: 0.125rem;
+}
+
+.outlet-payment-page__actions-cell button[aria-label="Edit payment"] .mat-icon {
+  color: #1565c0;
+}
+
+.outlet-payment-page__actions-cell button[aria-label="Delete payment"] .mat-icon {
+  color: #c62828;
+}
+
+.outlet-payment-page__action-approve .mat-icon {
+  color: #2e7d32;
+}
+

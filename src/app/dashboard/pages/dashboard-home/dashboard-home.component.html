@@ -1,0 +1,252 @@
+<div class="dashboard-home">
+  <!-- Hero / Welcome -->
+  <header class="dashboard-home__hero">
+    <div class="dashboard-home__hero-bg"></div>
+    <div class="dashboard-home__hero-content">
+      <h1 class="dashboard-home__title">Welcome back, {{ username }}</h1>
+      <p class="dashboard-home__subtitle">Here’s what’s happening across Find It today.</p>
+    </div>
+  </header>
+
+  <!-- KPI Cards -->
+  <section class="dashboard-home__stats" aria-label="Overview statistics">
+    <a mat-card routerLink="/dashboard/users/view" class="stat-card stat-card--users">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.totalUsers | number }}</span>
+          <span class="stat-card__label">Users</span>
+        </div>
+      </mat-card-content>
+    </a>
+    <a mat-card routerLink="/dashboard/merchant" class="stat-card stat-card--merchants">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>store</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.totalMerchants | number }}</span>
+          <span class="stat-card__label">Merchants</span>
+        </div>
+      </mat-card-content>
+    </a>
+    <a mat-card routerLink="/dashboard/merchant" class="stat-card stat-card--sub-merchants">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>storefront</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.totalSubMerchants | number }}</span>
+          <span class="stat-card__label">Sub Merchants</span>
+        </div>
+      </mat-card-content>
+    </a>
+    <a mat-card routerLink="/dashboard/items/view" class="stat-card stat-card--items">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.totalItems | number }}</span>
+          <span class="stat-card__label">Items</span>
+        </div>
+      </mat-card-content>
+    </a>
+    <a mat-card routerLink="/dashboard/customers/view" class="stat-card stat-card--customers">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.totalCustomers | number }}</span>
+          <span class="stat-card__label">Customers</span>
+        </div>
+      </mat-card-content>
+    </a>
+    <a mat-card routerLink="/dashboard/outlet" class="stat-card stat-card--outlets">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>storefront</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.totalOutlets | number }}</span>
+          <span class="stat-card__label">Outlets</span>
+        </div>
+      </mat-card-content>
+    </a>
+    <a mat-card routerLink="/dashboard/category" class="stat-card stat-card--categories">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>category</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.totalCategories | number }}</span>
+          <span class="stat-card__label">Categories</span>
+        </div>
+      </mat-card-content>
+    </a>
+  </section>
+
+  <!-- Secondary KPIs -->
+  <section class="dashboard-home__stats dashboard-home__stats--secondary">
+    <mat-card class="stat-card stat-card--pending">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>pending_actions</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.pendingApprovals }}</span>
+          <span class="stat-card__label">Pending approvals</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="stat-card stat-card--discounts">
+      <mat-card-content>
+        <div class="stat-card__icon">
+          <mat-icon>local_offer</mat-icon>
+        </div>
+        <div class="stat-card__body">
+          <span class="stat-card__value">{{ stats.activeDiscounts }}</span>
+          <span class="stat-card__label">Active discounts</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </section>
+
+  <!-- Monthly income + Notifications row -->
+  <section class="dashboard-home__main">
+    <mat-card class="dashboard-home__chart-card">
+      <mat-card-header>
+        <mat-card-title>Monthly income</mat-card-title>
+        <mat-card-subtitle>Income by month (LKR)</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="income-bar-chart" role="img" aria-label="Monthly income bar chart">
+          <div class="income-bar-chart__y-label">LKR</div>
+          <div class="income-bar-chart__area">
+            <div
+              *ngFor="let d of monthlyIncomeData; trackBy: trackByIncomeLabel"
+              class="income-bar-chart__row"
+            >
+              <span class="income-bar-chart__label">{{ d?.label }}</span>
+              <div class="income-bar-chart__bar-wrap">
+                <div
+                  class="income-bar-chart__bar"
+                  [style.width.%]="((d?.value ?? 0) / monthlyIncomeMax) * 100"
+                  [style.background]="d?.color"
+                ></div>
+              </div>
+              <span class="income-bar-chart__value">LKR {{ (d?.value ?? 0) | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recent notifications -->
+    <mat-card class="dashboard-home__notifications-card">
+      <mat-card-header>
+        <mat-card-title>Recent notifications</mat-card-title>
+        <mat-card-subtitle>Latest updates</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (recentNotifications.length === 0) {
+          <p class="notifications-empty">No notifications yet.</p>
+        } @else {
+          <ul class="notification-list">
+            @for (n of recentNotifications; track n.id) {
+              <li class="notification-list__item" [class.notification-list__item--unread]="!n.isRead">
+                <span class="notification-list__icon" [class]="'notification-list__icon--' + n.type">
+                  <mat-icon>{{ getNotificationTypeIcon(n.type) }}</mat-icon>
+                </span>
+                <div class="notification-list__body">
+                  <span class="notification-list__title">{{ n.title }}</span>
+                  <span class="notification-list__message">{{ n.message }}</span>
+                </div>
+                <span class="notification-list__time">{{ formatNotificationTime(n.createdAt) }}</span>
+              </li>
+            }
+          </ul>
+        }
+        <a mat-button routerLink="/dashboard/notifications" class="notifications-view-all">View all notifications</a>
+      </mat-card-content>
+    </mat-card>
+  </section>
+
+  <!-- Merchant summary + Outlet pie chart (from /dashboard/merchant-summary API) -->
+  <section class="dashboard-home__merchant-section">
+    <mat-card class="dashboard-home__merchant-summary-card">
+      <mat-card-header>
+        <mat-card-title>Merchant summary</mat-card-title>
+        <mat-card-subtitle>From merchant-summary API</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="merchant-summary__stats">
+          <div class="merchant-summary__stat">
+            <span class="merchant-summary__value">{{ (merchantSummary.totalMerchants ?? 0) | number }}</span>
+            <span class="merchant-summary__label">Total merchants</span>
+          </div>
+          <div class="merchant-summary__stat">
+            <span class="merchant-summary__value">{{ (merchantSummary.totalOutlets ?? 0) | number }}</span>
+            <span class="merchant-summary__label">Total outlets</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card class="dashboard-home__pie-card">
+      <mat-card-header>
+        <mat-card-title>Outlet distribution</mat-card-title>
+        <mat-card-subtitle>Pie chart by category / merchant</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="pie-chart-wrap">
+          <svg class="pie-chart" viewBox="0 0 100 100" aria-label="Outlet distribution pie chart">
+            <circle cx="50" cy="50" r="45" fill="var(--mat-sys-surface-container-high)" />
+            @for (d of outletPieData; track d.label; let i = $index) {
+              <path
+                [attr.d]="getOutletPieSlicePath(i)"
+                [attr.fill]="d.color"
+                stroke="#fff"
+                stroke-width="0.4"
+              />
+            }
+          </svg>
+          <div class="pie-chart__legend">
+            @for (d of outletPieData; track d.label) {
+              <div class="pie-legend__item">
+                <span class="pie-legend__dot" [style.background]="d.color"></span>
+                <span class="pie-legend__label">{{ d.label }}</span>
+                <span class="pie-legend__value">{{ d.value }} ({{ (d.value / outletPieTotal * 100) | number:'1.0-0' }}%)</span>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </section>
+
+  <!-- Quick links -->
+  <section class="dashboard-home__quick-links">
+    <h2 class="dashboard-home__section-title">Quick actions</h2>
+    <div class="quick-links-grid">
+      <a mat-raised-button color="primary" routerLink="/dashboard/users/view" class="quick-link">
+        <mat-icon>people</mat-icon>
+        User
+      </a>
+      <a mat-raised-button routerLink="/dashboard/merchant" class="quick-link">
+        <mat-icon>store</mat-icon>
+        Merchants
+      </a>
+      <a mat-raised-button routerLink="/dashboard/outlet/payment" class="quick-link">
+        <mat-icon>payment</mat-icon>
+        Payments
+      </a>
+      <a mat-raised-button routerLink="/dashboard/items/discount" class="quick-link">
+        <mat-icon>local_offer</mat-icon>
+        Discounts
+      </a>
+    </div>
+  </section>
+</div>

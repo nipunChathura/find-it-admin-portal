@@ -12,10 +12,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AdminUsersApiService, ViewUserRow } from '../../../core/api/admin-users.api';
+import { getApiErrorMessage } from '../../../core/api/api-error.util';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { DeleteUserConfirmDialogComponent, DeleteUserConfirmData } from './delete-user-confirm.dialog';
+import { RejectUserReasonDialogComponent } from './reject-user-reason.dialog';
 import { EditUserDialogComponent, EditUserDialogResult } from './edit-user.dialog';
 import { AddUserDialogComponent, AddUserDialogResult } from './add-user.dialog';
 
@@ -25,6 +27,7 @@ const STATUS_OPTIONS = [
   { value: 'INACTIVE', label: 'INACTIVE' },
   { value: 'PENDING', label: 'PENDING' },
   { value: 'APPROVED', label: 'APPROVED' },
+  { value: 'REJECTED', label: 'REJECTED' },
   { value: 'FORGOT_PASSWORD_PENDING', label: 'FORGOT_PASSWORD_PENDING' },
 ];
 
@@ -44,7 +47,6 @@ const STATUS_OPTIONS = [
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './view-user.component.html',
   styleUrl: './view-user.component.scss',
@@ -70,25 +72,9 @@ export class ViewUserComponent implements AfterViewInit {
     private readonly auth: AuthService,
     private readonly dialog: MatDialog,
     private readonly adminUsersApi: AdminUsersApiService,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {
     this.loadUsers();
-  }
-
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      panelClass: ['snackbar-success'],
-      verticalPosition: 'top',
-    });
-  }
-
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
   }
 
   onAddUser(): void {
@@ -113,11 +99,12 @@ export class ViewUserComponent implements AfterViewInit {
     };
     this.adminUsersApi.createUser(body).subscribe({
       next: () => {
-        this.showSuccess('User added successfully.');
+        this.snackbar.showSuccess('User added successfully.');
         this.loadUsers();
       },
-      error: () => {
-        this.showError('Failed to add user.');
+      error: (err) => {
+        const message = getApiErrorMessage(err, 'Failed to add user.');
+        this.snackbar.showError(message);
         this.loadUsers();
       },
     });
@@ -145,21 +132,21 @@ export class ViewUserComponent implements AfterViewInit {
 
   private updateUser(result: EditUserDialogResult): void {
     const body = {
-      username: result.name.trim(),
+      username: result.username.trim(),
       email: result.email?.trim() ?? '',
-      password: '',
-      role: result.role ?? 'ADMIN',
+      password: result.password ?? '',
+      role: 'ADMIN',
       status: result.status,
       merchantId: null as number | null,
       subMerchantId: null as number | null,
     };
     this.adminUsersApi.updateUser(result.id, body).subscribe({
       next: () => {
-        this.showSuccess('User updated successfully.');
+        this.snackbar.showSuccess('User updated successfully.');
         this.loadUsers();
       },
-      error: () => {
-        this.showError('Failed to update user.');
+      error: (err) => {
+        this.snackbar.showError(getApiErrorMessage(err, 'Failed to update user.'));
         this.loadUsers();
       },
     });
@@ -179,13 +166,13 @@ export class ViewUserComponent implements AfterViewInit {
   }
 
   private deleteUser(row: ViewUserRow): void {
-    this.adminUsersApi.updateUserStatus(row.id, 'DELETE').subscribe({
+    this.adminUsersApi.updateUserStatus(row.id, 'DELETED').subscribe({
       next: () => {
-        this.showSuccess('User deleted successfully.');
+        this.snackbar.showSuccess('User deleted successfully.');
         this.loadUsers();
       },
-      error: () => {
-        this.showError('Failed to delete user.');
+      error: (err) => {
+        this.snackbar.showError(getApiErrorMessage(err, 'Failed to delete user.'));
         this.loadUsers();
       },
     });
@@ -194,7 +181,7 @@ export class ViewUserComponent implements AfterViewInit {
   onApprove(row: ViewUserRow): void {
     this.adminUsersApi.approveUser(row.id).subscribe({
       next: () => {
-        this.showSuccess('User approved successfully.');
+        this.snackbar.showSuccess('User approved successfully.');
         const index = this.allData.findIndex((u) => u.id === row.id);
         if (index !== -1) {
           this.allData[index] = { ...row, status: 'APPROVED' };
@@ -203,16 +190,48 @@ export class ViewUserComponent implements AfterViewInit {
           this.loadUsers();
         }
       },
-      error: () => {
-        this.showError('Failed to approve user.');
+      error: (err) => {
+        this.snackbar.showError(getApiErrorMessage(err, 'Failed to approve user.'));
         this.loadUsers();
       },
+    });
+  }
+
+  onReject(row: ViewUserRow): void {
+    const dialogRef = this.dialog.open(RejectUserReasonDialogComponent, {
+      width: '420px',
+      data: { userName: row.name || 'User' },
+      disableClose: false,
+    });
+    dialogRef.afterClosed().subscribe((reason: string | undefined) => {
+      if (reason == null) return;
+      this.adminUsersApi.rejectUser(row.id, reason).subscribe({
+        next: () => {
+          this.snackbar.showSuccess('User rejected successfully.');
+          const index = this.allData.findIndex((u) => u.id === row.id);
+          if (index !== -1) {
+            this.allData[index] = { ...row, status: 'REJECTED' };
+            this.dataSource.data = [...this.allData];
+          } else {
+            this.loadUsers();
+          }
+        },
+        error: (err) => {
+          this.snackbar.showError(getApiErrorMessage(err, 'Failed to reject user.'));
+          this.loadUsers();
+        },
+      });
     });
   }
 
   /** Show approve icon only for sysAdmin and when user status is PENDING. */
   canShowApprove(row: ViewUserRow): boolean {
     return this.canEditUserStatus && row.status === 'PENDING';
+  }
+
+  /** Show reject icon only for sysAdmin and when user status is PENDING. */
+  canShowReject(row: ViewUserRow): boolean {
+    return this.canEditUserStatus && (row.status ?? '').toUpperCase() === 'PENDING';
   }
 
   /** Hide Edit/Delete/Approve for rows whose user has SysAdmin role. */
@@ -228,6 +247,7 @@ export class ViewUserComponent implements AfterViewInit {
       INACTIVE: 'inactive',
       PENDING: 'pending',
       APPROVED: 'approved',
+      REJECTED: 'rejected',
       FORGOT_PASSWORD_PENDING: 'forgot-password-pending',
     };
     return map[status] ?? 'default';

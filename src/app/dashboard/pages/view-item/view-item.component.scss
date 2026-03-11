@@ -40,9 +40,17 @@
   margin-bottom: 1.5rem;
 }
 
-.view-items__status {
+.view-items__status,
+.view-items__category,
+.view-items__outlet,
+.view-items__filter-id {
   width: 160px;
   min-width: 140px;
+}
+
+.view-items__category,
+.view-items__outlet {
+  min-width: 200px;
 }
 
 .view-items__search {
@@ -71,6 +79,10 @@
 
 .view-items__clear-btn {
   color: #c62828;
+
+  .mdc-button__label {
+    color: #c62828;
+  }
 }
 
 .view-items__clear-btn .mat-icon {
@@ -85,6 +97,10 @@
 
 .view-items__table {
   width: 100%;
+}
+
+.view-items__row-click {
+  cursor: pointer;
 }
 
 .view-items__status-badge {
@@ -115,6 +131,19 @@
 .view-items__status-badge--default {
   background: var(--mat-sys-surface-container-highest);
   color: var(--mat-sys-on-surface);
+}
+
+.view-items__availability {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.view-items__availability--yes {
+  color: #1b5e20;
+}
+
+.view-items__availability--no {
+  color: #c62828;
 }
 
 .view-items__actions-cell {
@@ -169,3 +198,4 @@
     justify-content: flex-end;
   }
 }
+

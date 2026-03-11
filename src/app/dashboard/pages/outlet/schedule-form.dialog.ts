@@ -8,10 +8,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
 import {
   OutletScheduleEntry,
   ScheduleType,
+  DayOfWeek,
   SCHEDULE_TYPE_OPTIONS,
   DAY_OF_WEEK_OPTIONS,
 } from './outlet-schedule.model';
@@ -23,6 +25,18 @@ export interface ScheduleFormDialogData {
 
 /** Time regex HH:mm (00:00 - 23:59). */
 const TIME_PATTERN = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({ value: i, label: String(i).padStart(2, '0') }));
+const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, i) => ({ value: i, label: String(i).padStart(2, '0') }));
+
+function parseTimeHHmm(val: string | null): { h: number; m: number } {
+  if (!val || !TIME_PATTERN.test(val)) return { h: 9, m: 0 };
+  const [h, m] = val.split(':').map(Number);
+  return { h: Math.min(23, Math.max(0, h)), m: Math.min(59, Math.max(0, m)) };
+}
+function toHHmm(h: number, m: number): string {
+  return `${String(Math.min(23, Math.max(0, h))).padStart(2, '0')}:${String(Math.min(59, Math.max(0, m))).padStart(2, '0')}`;
+}
 
 @Component({
   selector: 'app-schedule-form-dialog',
@@ -37,6 +51,7 @@ const TIME_PATTERN = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     MatButtonModule,
     MatCheckboxModule,
     MatDatepickerModule,
+    MatIconModule,
     MatNativeDateModule,
   ],
   providers: [provideNativeDateAdapter()],
@@ -53,11 +68,15 @@ export class ScheduleFormDialogComponent implements OnInit {
 
   readonly scheduleTypeOptions = SCHEDULE_TYPE_OPTIONS;
   readonly dayOfWeekOptions = DAY_OF_WEEK_OPTIONS;
+  readonly hourOptions = HOUR_OPTIONS;
+  readonly minuteOptions = MINUTE_OPTIONS;
   readonly isEdit = !!this.data.entry;
 
   form: FormGroup = this.fb.group({
     scheduleType: [this.data.entry?.scheduleType ?? 'NORMAL', Validators.required],
     dayOfWeek: [this.data.entry?.dayOfWeek ?? null],
+    /** NORMAL add: multiple days; NORMAL edit: single day in array. */
+    daysOfWeek: [this.data.entry?.dayOfWeek ? [this.data.entry.dayOfWeek] : []],
     date: [this.data.entry?.date ? new Date(this.data.entry.date) : null],
     startDate: [this.data.entry?.startDate ? new Date(this.data.entry.startDate) : null],
     endDate: [this.data.entry?.endDate ? new Date(this.data.entry.endDate) : null],
@@ -93,6 +112,26 @@ export class ScheduleFormDialogComponent implements OnInit {
     return ['EMERGENCY', 'DAILY', 'TEMPORARY'].includes(this.scheduleType);
   }
 
+  get openHour(): number {
+    return parseTimeHHmm(this.form.get('openTime')?.value).h;
+  }
+  get openMinute(): number {
+    return parseTimeHHmm(this.form.get('openTime')?.value).m;
+  }
+  get closeHour(): number {
+    return parseTimeHHmm(this.form.get('closeTime')?.value).h;
+  }
+  get closeMinute(): number {
+    return parseTimeHHmm(this.form.get('closeTime')?.value).m;
+  }
+
+  setOpenTime(h: number, m: number): void {
+    this.form.get('openTime')?.setValue(toHHmm(h, m));
+  }
+  setCloseTime(h: number, m: number): void {
+    this.form.get('closeTime')?.setValue(toHHmm(h, m));
+  }
+
   ngOnInit(): void {
     this.onScheduleTypeChange();
   }
@@ -102,26 +141,36 @@ export class ScheduleFormDialogComponent implements OnInit {
     if (clearConditionalValues) {
       this.form.patchValue({
         dayOfWeek: null,
+        daysOfWeek: [],
         date: null,
         startDate: null,
         endDate: null,
       });
     }
     const dayOfWeek = this.form.get('dayOfWeek');
+    const daysOfWeek = this.form.get('daysOfWeek');
     const date = this.form.get('date');
     const startDate = this.form.get('startDate');
     const endDate = this.form.get('endDate');
     dayOfWeek?.clearValidators();
+    daysOfWeek?.clearValidators();
     date?.clearValidators();
     startDate?.clearValidators();
     endDate?.clearValidators();
-    if (type === 'NORMAL') dayOfWeek?.setValidators(Validators.required);
+    if (type === 'NORMAL') {
+      if (this.isEdit) {
+        dayOfWeek?.setValidators(Validators.required);
+      } else {
+        daysOfWeek?.setValidators([Validators.required, (c) => (Array.isArray(c.value) && c.value.length > 0 ? null : { required: true })]);
+      }
+    }
     if (type === 'EMERGENCY' || type === 'DAILY') date?.setValidators(Validators.required);
     if (type === 'TEMPORARY') {
       startDate?.setValidators(Validators.required);
       endDate?.setValidators(Validators.required);
     }
     dayOfWeek?.updateValueAndValidity();
+    daysOfWeek?.updateValueAndValidity();
     date?.updateValueAndValidity();
     startDate?.updateValueAndValidity();
     endDate?.updateValueAndValidity();
@@ -130,24 +179,46 @@ export class ScheduleFormDialogComponent implements OnInit {
   onSubmit(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
-    const v = this.form.value;
-    const entry: OutletScheduleEntry = {
+    const v = this.form.getRawValue();
+    const dateVal = this.showSingleDate ? this.form.get('date')?.value : null;
+    const startDateVal = this.showDateRange ? this.form.get('startDate')?.value : null;
+    const endDateVal = this.showDateRange ? this.form.get('endDate')?.value : null;
+    const baseEntry: Omit<OutletScheduleEntry, 'dayOfWeek'> = {
       id: this.data.entry?.id,
       outletId: this.data.outletId,
       scheduleType: v.scheduleType,
-      dayOfWeek: this.showDayOfWeek ? v.dayOfWeek : null,
-      date: this.showSingleDate && v.date ? this.toISODate(v.date) : null,
-      startDate: this.showDateRange && v.startDate ? this.toISODate(v.startDate) : null,
-      endDate: this.showDateRange && v.endDate ? this.toISODate(v.endDate) : null,
+      date: this.showSingleDate && dateVal ? this.toISODateLocal(dateVal) : null,
+      startDate: this.showDateRange && startDateVal ? this.toISODateLocal(startDateVal) : null,
+      endDate: this.showDateRange && endDateVal ? this.toISODateLocal(endDateVal) : null,
       openTime: v.openTime,
       closeTime: v.closeTime,
       isClosed: !!v.isClosed,
       reason: this.showReason ? (v.reason || null) : null,
     };
-    this.dialogRef.close(entry);
+    if (this.showDayOfWeek && this.scheduleType === 'NORMAL') {
+      if (this.isEdit) {
+        const entry: OutletScheduleEntry = { ...baseEntry, dayOfWeek: v.dayOfWeek ?? null };
+        this.dialogRef.close(entry);
+      } else {
+        const days = (v.daysOfWeek ?? []) as DayOfWeek[];
+        if (days.length === 0) return;
+        const entries: OutletScheduleEntry[] = days.map((day) => ({ ...baseEntry, dayOfWeek: day }));
+        this.dialogRef.close({ multiple: true, entries });
+      }
+    } else {
+      const entry: OutletScheduleEntry = { ...baseEntry, dayOfWeek: null };
+      this.dialogRef.close(entry);
+    }
   }
 
-  private toISODate(d: Date): string {
-    return d instanceof Date ? d.toISOString().slice(0, 10) : String(d).slice(0, 10);
+  /** Format date as YYYY-MM-DD using local date (avoids UTC shifting the day for EMERGENCY/DAILY update). */
+  private toISODateLocal(d: Date | string | null): string {
+    if (d == null) return '';
+    const date = d instanceof Date ? d : new Date(String(d));
+    if (isNaN(date.getTime())) return '';
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 }

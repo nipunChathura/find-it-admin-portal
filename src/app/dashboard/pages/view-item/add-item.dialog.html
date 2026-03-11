@@ -1,13 +1,66 @@
 <h2 mat-dialog-title>Add Item</h2>
 <mat-dialog-content>
   <mat-form-field appearance="outline" class="add-item-dialog__field">
-    <mat-label>Name</mat-label>
-    <input matInput [(ngModel)]="name" name="name" required />
+    <mat-label>Item name</mat-label>
+    <input matInput [(ngModel)]="itemName" name="itemName" required />
   </mat-form-field>
   <mat-form-field appearance="outline" class="add-item-dialog__field">
     <mat-label>Description</mat-label>
-    <textarea matInput [(ngModel)]="description" name="description" rows="3"></textarea>
+    <textarea matInput [(ngModel)]="itemDescription" name="itemDescription" rows="3"></textarea>
   </mat-form-field>
+  <mat-form-field appearance="outline" class="add-item-dialog__field">
+    <mat-label>Category</mat-label>
+    <input
+      matInput
+      [(ngModel)]="categorySearchText"
+      name="categorySearch"
+      placeholder="Search category..."
+      [matAutocomplete]="categoryAuto"
+      (ngModelChange)="onCategorySearchChange($event)"
+    />
+    <mat-autocomplete
+      #categoryAuto="matAutocomplete"
+      (optionSelected)="onCategorySelected($event.option.value)"
+    >
+      @for (cat of categorySearchResults$ | async; track cat.id) {
+        <mat-option [value]="cat">{{ cat.name }}</mat-option>
+      }
+      @empty {
+        @if (categorySearchText.trim()) {
+          <mat-option disabled>No categories found</mat-option>
+        }
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+  <mat-form-field appearance="outline" class="add-item-dialog__field">
+    <mat-label>Outlet</mat-label>
+    <mat-select [(ngModel)]="outletId" name="outletId" required>
+      @for (opt of outletOptions; track opt.outletId) {
+        <mat-option [value]="opt.outletId">{{ opt.outletName }}</mat-option>
+      }
+      @empty {
+        <mat-option disabled>No outlets</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field appearance="outline" class="add-item-dialog__field">
+    <mat-label>Price</mat-label>
+    <input matInput type="number" [(ngModel)]="price" name="price" min="0" step="0.01" />
+  </mat-form-field>
+  <div class="add-item-dialog__field">
+    <mat-checkbox [(ngModel)]="availability" name="availability">Available</mat-checkbox>
+  </div>
+  <div class="add-item-dialog__field add-item-dialog__image-wrap">
+    <label class="add-item-dialog__image-label">Item image (optional)</label>
+    <input #itemFileInput type="file" accept="image/*" (change)="onImageSelected($event)" class="add-item-dialog__file-input" />
+    <button mat-stroked-button type="button" (click)="itemFileInput.click()">Select image</button>
+    @if (itemImage) {
+      <div class="add-item-dialog__preview">
+        <img [src]="itemImage" alt="Item preview" class="add-item-dialog__preview-img" />
+        <button mat-button type="button" (click)="clearImage()">Remove image</button>
+      </div>
+    }
+  </div>
   <mat-form-field appearance="outline" class="add-item-dialog__field">
     <mat-label>Status</mat-label>
     <mat-select [(ngModel)]="status" name="status">
@@ -18,6 +71,6 @@
   </mat-form-field>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn">Cancel</button>
-  <button mat-raised-button color="primary" (click)="onSave()" type="button">Save</button>
+  <button mat-raised-button mat-dialog-close type="button" class="dialog-cancel-btn" [disabled]="saving">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()" type="button" [disabled]="!itemName.trim() || categoryId == null || outletId == null || saving">{{ saving ? 'Uploading...' : 'Save' }}</button>
 </mat-dialog-actions>

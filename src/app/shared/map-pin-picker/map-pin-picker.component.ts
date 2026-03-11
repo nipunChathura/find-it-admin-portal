@@ -16,7 +16,7 @@ export interface MapPinLocation {
 }
 
 /** Sri Lanka center and default zoom */
-const SRI_LANKA_CENTER = { lat: 7.8731, lng: 80.7718 };
+const SRI_LANKA_CENTER: google.maps.LatLngLiteral = { lat: 7.8731, lng: 80.7718 };
 const SRI_LANKA_ZOOM = 8;
 
 @Component({
@@ -27,8 +27,8 @@ const SRI_LANKA_ZOOM = 8;
     <div class="map-pin-picker__hint">Click on the map to place the outlet location pin.</div>
     <div class="map-pin-picker__wrapper">
       <google-map
-        [center]="center"
-        [zoom]="zoom"
+        [center]="effectiveCenter"
+        [zoom]="effectiveZoom"
         [options]="mapOptions"
         width="100%"
         height="280px"
@@ -70,11 +70,18 @@ const SRI_LANKA_ZOOM = 8;
 export class MapPinPickerComponent implements OnChanges, OnDestroy {
   @Input() latitude: number | null = null;
   @Input() longitude: number | null = null;
+  /** When set (e.g. selected city center), map centers and zooms here. */
+  @Input() mapCenter: google.maps.LatLngLiteral | null = null;
+  @Input() mapZoom: number | null = null;
 
   @Output() locationSelected = new EventEmitter<MapPinLocation>();
 
-  readonly center = SRI_LANKA_CENTER;
-  readonly zoom = SRI_LANKA_ZOOM;
+  get effectiveCenter(): google.maps.LatLngLiteral {
+    return this.mapCenter ?? SRI_LANKA_CENTER;
+  }
+  get effectiveZoom(): number {
+    return this.mapZoom ?? SRI_LANKA_ZOOM;
+  }
   markerPosition: google.maps.LatLngLiteral | null = null;
 
   constructor() {

@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { AdminCategoriesApiService, CategoryRow } from '../../../core/api/admin-categories.api';
 import { DeleteCategoryConfirmDialogComponent } from './delete-category-confirm.dialog';
 import { EditCategoryDialogComponent, EditCategoryDialogResult } from './edit-category.dialog';
@@ -46,7 +46,6 @@ const CATEGORY_TYPE_OPTIONS = [
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './category.component.html',
   styleUrl: './category.component.scss',
@@ -68,26 +67,11 @@ export class CategoryComponent implements AfterViewInit {
   constructor(
     private readonly dialog: MatDialog,
     private readonly categoriesApi: AdminCategoriesApiService,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {
     this.loadCategories();
   }
 
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      panelClass: ['snackbar-success'],
-      verticalPosition: 'top',
-    });
-  }
-
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
-  }
 
   onAddCategory(): void {
     const dialogRef = this.dialog.open(AddCategoryDialogComponent, {
@@ -96,12 +80,18 @@ export class CategoryComponent implements AfterViewInit {
     });
     dialogRef.afterClosed().subscribe((result: AddCategoryDialogResult | undefined) => {
       if (!result) return;
-      this.categoriesApi.createCategory({ name: result.name, categoryType: result.categoryType, status: result.status }).subscribe({
+      this.categoriesApi.createCategory({
+        categoryName: result.categoryName,
+        categoryDescription: result.categoryDescription ?? '',
+        categoryImage: result.categoryImage ?? null,
+        categoryType: result.categoryType,
+        status: result.status,
+      }).subscribe({
         next: () => {
-          this.showSuccess('Category added successfully.');
+          this.snackbar.showSuccess('Category added successfully.');
           this.loadCategories();
         },
-        error: () => this.showError('Failed to add category.'),
+        error: () => this.snackbar.showError('Failed to add category.'),
       });
     });
   }
@@ -109,17 +99,30 @@ export class CategoryComponent implements AfterViewInit {
   onEdit(row: CategoryRow): void {
     const dialogRef = this.dialog.open(EditCategoryDialogComponent, {
       width: '420px',
-      data: { id: row.id, name: row.name, categoryType: row.categoryType, status: row.status, createdDate: row.createdDate },
+      data: {
+      id: row.id,
+      name: row.name,
+      categoryDescription: row.categoryDescription ?? '',
+      categoryType: row.categoryType,
+      status: row.status,
+      createdDate: row.createdDate,
+    },
       disableClose: false,
     });
     dialogRef.afterClosed().subscribe((result: EditCategoryDialogResult | undefined) => {
       if (!result) return;
-      this.categoriesApi.updateCategory(result.id, { name: result.name, categoryType: result.categoryType, status: result.status }).subscribe({
+      this.categoriesApi.updateCategory(result.id, {
+        categoryName: result.categoryName,
+        categoryDescription: result.categoryDescription ?? '',
+        categoryImage: result.categoryImage ?? null,
+        categoryType: result.categoryType,
+        status: result.status,
+      }).subscribe({
         next: () => {
-          this.showSuccess('Category updated successfully.');
+          this.snackbar.showSuccess('Category updated successfully.');
           this.loadCategories();
         },
-        error: () => this.showError('Failed to update category.'),
+        error: () => this.snackbar.showError('Failed to update category.'),
       });
     });
   }
@@ -134,10 +137,10 @@ export class CategoryComponent implements AfterViewInit {
       if (!confirmed) return;
       this.categoriesApi.deleteCategory(row.id).subscribe({
         next: () => {
-          this.showSuccess('Category deleted successfully.');
+          this.snackbar.showSuccess('Category deleted successfully.');
           this.loadCategories();
         },
-        error: () => this.showError('Failed to delete category.'),
+        error: () => this.snackbar.showError('Failed to delete category.'),
       });
     });
   }

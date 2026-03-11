@@ -7,22 +7,31 @@ import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { AdminItemsApiService, ViewItemRow } from '../../../core/api/admin-items.api';
+import { AdminCategoriesApiService } from '../../../core/api/admin-categories.api';
+import { AdminOutletsApiService } from '../../../core/api/admin-outlets.api';
 import { DeleteItemConfirmDialogComponent, DeleteItemConfirmData } from './delete-item-confirm.dialog';
 import { EditItemDialogComponent, EditItemDialogResult } from './edit-item.dialog';
 import { AddItemDialogComponent, AddItemDialogResult } from './add-item.dialog';
+import { ItemDetailDialogComponent } from './item-detail.dialog';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
   { value: 'ACTIVE', label: 'ACTIVE' },
   { value: 'INACTIVE', label: 'INACTIVE' },
-  { value: 'PENDING', label: 'PENDING' },
+];
+
+const AVAILABILITY_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'true', label: 'Available' },
+  { value: 'false', label: 'Unavailable' },
 ];
 
 @Component({
@@ -37,11 +46,11 @@ const STATUS_OPTIONS = [
     MatFormFieldModule,
     MatSelectModule,
     MatInputModule,
+    MatAutocompleteModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './view-item.component.html',
   styleUrl: './view-item.component.scss',
@@ -51,36 +60,155 @@ export class ViewItemComponent implements AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   readonly statusOptions = STATUS_OPTIONS;
-  readonly displayedColumns: string[] = ['actions', 'id', 'name', 'description', 'status', 'createdDate'];
+  readonly availabilityOptions = AVAILABILITY_OPTIONS;
+  readonly displayedColumns: string[] = [
+    'actions',
+    'id',
+    'name',
+    'categoryName',
+    'outletName',
+    'price',
+    'status',
+    'availability',
+    'discountAvailability',
+  ];
 
   statusFilter = 'all';
+  availabilityFilter = 'all';
   searchText = '';
+  /** Category filter: '' = all, number = category id. Search dropdown shows 5 results. */
+  categoryIdFilter: number | '' = '';
+  categorySearchText = '';
+  /** Category dropdown options from get categories API (max 5). */
+  categoryOptions: { id: number; name: string }[] = [];
+  private categorySearchTimeout: ReturnType<typeof setTimeout> | null = null;
+  /** Outlet filter: '' = all, number = outlet id. Search dropdown shows 5 results. */
+  outletIdFilter: number | '' = '';
+  outletSearchText = '';
+  /** Outlet dropdown options from get outlets API (max 5). */
+  outletOptions: { outletId: number; outletName: string }[] = [];
+  private outletSearchTimeout: ReturnType<typeof setTimeout> | null = null;
   dataSource = new MatTableDataSource<ViewItemRow>([]);
   private allData: ViewItemRow[] = [];
 
   constructor(
     private readonly dialog: MatDialog,
     private readonly adminItemsApi: AdminItemsApiService,
-    private readonly snackBar: MatSnackBar,
+    private readonly adminCategoriesApi: AdminCategoriesApiService,
+    private readonly adminOutletsApi: AdminOutletsApiService,
+    private readonly snackbar: SnackbarService,
   ) {
+    this.loadDefaultCategoryOptions();
+    this.loadDefaultOutletOptions();
     this.loadItems();
   }
 
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      panelClass: ['snackbar-success'],
-      verticalPosition: 'top',
+  /** Load first 5 categories (no search) for default dropdown options. */
+  private loadDefaultCategoryOptions(): void {
+    this.adminCategoriesApi.getCategories({}).subscribe({
+      next: (rows) => {
+        this.categoryOptions = rows.slice(0, 5).map((r) => ({ id: r.id, name: r.name }));
+      },
+      error: () => {
+        this.categoryOptions = [];
+      },
     });
   }
 
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
+  /** Load first 5 outlets (no search) for default dropdown options. */
+  private loadDefaultOutletOptions(): void {
+    this.adminOutletsApi
+      .getOutlets({ search: '', status: '', outletType: '' })
+      .subscribe({
+        next: (items) => {
+          this.outletOptions = items
+            .slice(0, 5)
+            .map((item) => ({
+              outletId: item.row.outletId,
+              outletName: item.row.outletName || `Outlet ${item.row.outletId}`,
+            }));
+        },
+        error: () => {
+          this.outletOptions = [];
+        },
+      });
   }
+
+  /** Called when user types in category search; debounced, then calls get categories API and shows 5 results. */
+  onCategorySearchInput(): void {
+    if (this.categorySearchTimeout != null) {
+      clearTimeout(this.categorySearchTimeout);
+    }
+    const q = this.categorySearchText?.trim() ?? '';
+    if (!q) {
+      this.loadDefaultCategoryOptions();
+      return;
+    }
+    this.categorySearchTimeout = setTimeout(() => {
+      this.categorySearchTimeout = null;
+      this.adminCategoriesApi.getCategories({ search: q }).subscribe({
+        next: (rows) => {
+          this.categoryOptions = rows.slice(0, 5).map((r) => ({ id: r.id, name: r.name }));
+        },
+        error: () => {
+          this.categoryOptions = [];
+        },
+      });
+    }, 300);
+  }
+
+  onCategoryOptionSelected(opt: { id: number; name: string }): void {
+    this.categoryIdFilter = opt.id;
+    this.categorySearchText = opt.name;
+  }
+
+  clearCategoryFilter(): void {
+    this.categoryIdFilter = '';
+    this.categorySearchText = '';
+    this.loadDefaultCategoryOptions();
+  }
+
+  /** Called when user types in outlet search; debounced, then calls get outlets API and shows 5 results. */
+  onOutletSearchInput(): void {
+    if (this.outletSearchTimeout != null) {
+      clearTimeout(this.outletSearchTimeout);
+    }
+    const q = this.outletSearchText?.trim() ?? '';
+    if (!q) {
+      this.loadDefaultOutletOptions();
+      return;
+    }
+    this.outletSearchTimeout = setTimeout(() => {
+      this.outletSearchTimeout = null;
+      this.adminOutletsApi
+        .getOutlets({ search: q, status: '', outletType: '' })
+        .subscribe({
+          next: (items) => {
+            this.outletOptions = items
+              .slice(0, 5)
+              .map((item) => ({
+                outletId: item.row.outletId,
+                outletName: item.row.outletName || `Outlet ${item.row.outletId}`,
+              }));
+          },
+          error: () => {
+            this.outletOptions = [];
+          },
+        });
+    }, 300);
+  }
+
+  onOutletOptionSelected(opt: { outletId: number; outletName: string }): void {
+    this.outletIdFilter = opt.outletId;
+    this.outletSearchText = opt.outletName;
+  }
+
+  clearOutletFilter(): void {
+    this.outletIdFilter = '';
+    this.outletSearchText = '';
+    this.loadDefaultOutletOptions();
+  }
+
 
   onAddItem(): void {
     const dialogRef = this.dialog.open(AddItemDialogComponent, {
@@ -96,31 +224,50 @@ export class ViewItemComponent implements AfterViewInit {
 
   private addItem(newItem: AddItemDialogResult): void {
     const body = {
-      name: newItem.name,
-      description: newItem.description,
+      itemName: newItem.itemName,
+      itemDescription: newItem.itemDescription,
+      categoryId: newItem.categoryId,
+      outletId: newItem.outletId,
+      price: newItem.price,
+      availability: newItem.availability,
+      itemImage: newItem.itemImage,
       status: newItem.status,
     };
     this.adminItemsApi.createItem(body).subscribe({
       next: () => {
-        this.showSuccess('Item added successfully.');
+        this.snackbar.showSuccess('Item added successfully.');
         this.loadItems();
       },
       error: () => {
-        this.showError('Failed to add item.');
+        this.snackbar.showError('Failed to add item.');
         this.loadItems();
       },
     });
   }
 
+  onRowClick(row: ViewItemRow): void {
+    this.dialog.open(ItemDetailDialogComponent, {
+      width: '560px',
+      data: { ...row },
+    });
+  }
+
   onEdit(row: ViewItemRow): void {
     const dialogRef = this.dialog.open(EditItemDialogComponent, {
-      width: '420px',
+      width: '480px',
       data: {
         id: row.id,
         name: row.name,
         description: row.description,
+        categoryId: row.categoryId,
+        categoryName: row.categoryName,
+        outletId: row.outletId,
+        outletName: row.outletName,
+        price: row.price,
+        availability: row.availability,
+        itemImage: row.itemImage,
         status: row.status,
-        createdDate: row.createdDate,
+        createdDate: '',
       },
     });
     dialogRef.afterClosed().subscribe((result: EditItemDialogResult | undefined) => {
@@ -132,17 +279,22 @@ export class ViewItemComponent implements AfterViewInit {
 
   private updateItem(result: EditItemDialogResult): void {
     const body = {
-      name: result.name,
-      description: result.description,
+      itemName: result.itemName,
+      itemDescription: result.itemDescription,
+      categoryId: result.categoryId,
+      outletId: result.outletId,
+      price: result.price,
+      availability: result.availability,
+      itemImage: result.itemImage,
       status: result.status,
     };
     this.adminItemsApi.updateItem(result.id, body).subscribe({
       next: () => {
-        this.showSuccess('Item updated successfully.');
+        this.snackbar.showSuccess('Item updated successfully.');
         this.loadItems();
       },
       error: () => {
-        this.showError('Failed to update item.');
+        this.snackbar.showError('Failed to update item.');
         this.loadItems();
       },
     });
@@ -164,11 +316,11 @@ export class ViewItemComponent implements AfterViewInit {
   private deleteItem(row: ViewItemRow): void {
     this.adminItemsApi.deleteItem(row.id).subscribe({
       next: () => {
-        this.showSuccess('Item deleted successfully.');
+        this.snackbar.showSuccess('Item deleted successfully.');
         this.loadItems();
       },
       error: () => {
-        this.showError('Failed to delete item.');
+        this.snackbar.showError('Failed to delete item.');
         this.loadItems();
       },
     });
@@ -187,12 +339,15 @@ export class ViewItemComponent implements AfterViewInit {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
     this.dataSource.sortingDataAccessor = (row, prop) => {
-      if (prop === 'createdDate') return new Date(row.createdDate).getTime();
       switch (prop) {
         case 'id': return row.id;
         case 'name': return row.name.toLowerCase();
-        case 'description': return (row.description ?? '').toLowerCase();
+        case 'categoryName': return row.categoryName.toLowerCase();
+        case 'outletName': return row.outletName.toLowerCase();
+        case 'price': return row.price;
         case 'status': return row.status;
+        case 'availability': return row.availability ? 1 : 0;
+        case 'discountAvailability': return (row.discountAvailability ?? row.discountAvailable) ? 1 : 0;
         default: return '';
       }
     };
@@ -204,17 +359,28 @@ export class ViewItemComponent implements AfterViewInit {
 
   onClear(): void {
     this.statusFilter = 'all';
+    this.availabilityFilter = 'all';
     this.searchText = '';
+    this.clearCategoryFilter();
+    this.clearOutletFilter();
     this.loadItems();
   }
 
   private loadItems(): void {
     const status =
-      this.statusFilter === 'all' || this.statusFilter === ''
-        ? ''
-        : this.statusFilter;
+      this.statusFilter === 'all' || this.statusFilter === '' ? '' : this.statusFilter;
+    const availability =
+      this.availabilityFilter === 'all' || this.availabilityFilter === '' ? '' : this.availabilityFilter;
     const search = this.searchText?.trim() ?? '';
-    this.adminItemsApi.getItems({ status, search }).subscribe({
+    const categoryId =
+      this.categoryIdFilter === '' || this.categoryIdFilter == null
+        ? undefined
+        : this.categoryIdFilter;
+    const outletId =
+      this.outletIdFilter === '' || this.outletIdFilter == null
+        ? undefined
+        : String(this.outletIdFilter);
+    this.adminItemsApi.getItems({ search, categoryId, outletId, status, availability }).subscribe({
       next: (rows) => {
         this.allData = rows;
         this.dataSource.data = [...this.allData];

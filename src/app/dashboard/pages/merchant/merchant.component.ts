@@ -12,16 +12,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AdminMerchantsApiService, MerchantRow } from '../../../core/api/admin-merchants.api';
+import { SnackbarService } from '../../../core/snackbar/snackbar.service';
 import { DeleteMerchantConfirmDialogComponent } from './delete-merchant-confirm.dialog';
+import { RejectReasonDialogComponent } from './reject-reason.dialog';
 import { EditMerchantDialogComponent, EditMerchantDialogResult } from './edit-merchant.dialog';
 import { AddMerchantDialogComponent, AddMerchantDialogResult } from './add-merchant.dialog';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
+  { value: 'PENDING', label: 'PENDING' },
   { value: 'ACTIVE', label: 'ACTIVE' },
   { value: 'INACTIVE', label: 'INACTIVE' },
+  { value: 'REJECTED', label: 'REJECTED' },
 ];
 
 const MERCHANT_TYPE_OPTIONS = [
@@ -49,7 +52,6 @@ const MERCHANT_TYPE_OPTIONS = [
     MatIconModule,
     MatCardModule,
     MatTooltipModule,
-    MatSnackBarModule,
   ],
   templateUrl: './merchant.component.html',
   styleUrl: './merchant.component.scss',
@@ -81,25 +83,9 @@ export class MerchantComponent implements AfterViewInit {
   constructor(
     private readonly dialog: MatDialog,
     private readonly merchantsApi: AdminMerchantsApiService,
-    private readonly snackBar: MatSnackBar,
+    private readonly snackbar: SnackbarService,
   ) {
     this.loadMerchants();
-  }
-
-  private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 4000,
-      panelClass: ['snackbar-success'],
-      verticalPosition: 'top',
-    });
-  }
-
-  private showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
   }
 
   onAddMerchant(): void {
@@ -112,10 +98,10 @@ export class MerchantComponent implements AfterViewInit {
       if (!result) return;
       this.merchantsApi.createMerchant(result).subscribe({
         next: () => {
-          this.showSuccess('Merchant added successfully.');
+          this.snackbar.showSuccess('Merchant added successfully.');
           this.loadMerchants();
         },
-        error: () => this.showError('Failed to add merchant.'),
+        error: () => this.snackbar.showError('Failed to add merchant.'),
       });
     });
   }
@@ -132,10 +118,10 @@ export class MerchantComponent implements AfterViewInit {
       const { merchantId, ...body } = result;
       this.merchantsApi.updateMerchant(merchantId, body).subscribe({
         next: () => {
-          this.showSuccess('Merchant updated successfully.');
+          this.snackbar.showSuccess('Merchant updated successfully.');
           this.loadMerchants();
         },
-        error: () => this.showError('Failed to update merchant.'),
+        error: () => this.snackbar.showError('Failed to update merchant.'),
       });
     });
   }
@@ -150,18 +136,91 @@ export class MerchantComponent implements AfterViewInit {
       if (!confirmed) return;
       this.merchantsApi.deleteMerchant(row.merchantId).subscribe({
         next: () => {
-          this.showSuccess('Merchant deleted successfully.');
+          this.snackbar.showSuccess('Merchant deleted successfully.');
           this.loadMerchants();
         },
-        error: () => this.showError('Failed to delete merchant.'),
+        error: () => this.snackbar.showError('Failed to delete merchant.'),
       });
     });
+  }
+
+  onApprove(row: MerchantRow): void {
+    this.merchantsApi.approveMerchant(row.merchantId).subscribe({
+      next: () => {
+        this.snackbar.showSuccess('Merchant approved successfully.');
+        const index = this.allData.findIndex((m) => m.merchantId === row.merchantId);
+        if (index !== -1) {
+          this.allData[index] = { ...row, merchantStatus: 'ACTIVE' };
+          this.dataSource.data = [...this.allData];
+        } else {
+          this.loadMerchants();
+        }
+      },
+      error: () => {
+        this.snackbar.showError('Failed to approve merchant.');
+        this.loadMerchants();
+      },
+    });
+  }
+
+  onReject(row: MerchantRow): void {
+    const dialogRef = this.dialog.open(RejectReasonDialogComponent, {
+      width: '420px',
+      data: { merchantName: row.merchantName || 'Merchant' },
+      disableClose: false,
+    });
+    dialogRef.afterClosed().subscribe((reason: string | undefined) => {
+      if (reason == null) return;
+
+      const isSubMerchant = !!(row.parentMerchantName ?? '').trim() && row.subMerchantId != null;
+      const request$ = isSubMerchant
+        ? this.merchantsApi.rejectSubMerchant(row.merchantId, row.subMerchantId!, reason)
+        : this.merchantsApi.rejectMerchant(row.merchantId, reason);
+
+      request$.subscribe({
+        next: () => {
+          this.snackbar.showSuccess('Merchant rejected successfully.');
+          const index = this.allData.findIndex((m) => m.merchantId === row.merchantId);
+          if (index !== -1) {
+            this.allData[index] = { ...row, merchantStatus: 'REJECTED' };
+            this.dataSource.data = [...this.allData];
+          } else {
+            this.loadMerchants();
+          }
+        },
+        error: () => {
+          this.snackbar.showError('Failed to reject merchant.');
+          this.loadMerchants();
+        },
+      });
+    });
+  }
+
+  /** Show Approve button only for main merchants (no parent) with PENDING status. */
+  canShowApprove(row: MerchantRow): boolean {
+    const isPending = (row.merchantStatus ?? '').toUpperCase() === 'PENDING';
+    const isMainMerchant = !(row.parentMerchantName ?? '').trim();
+    return isPending && isMainMerchant;
+  }
+
+  /** Show Reject button only for main merchants (not sub-merchant) with PENDING status. */
+  canShowReject(row: MerchantRow): boolean {
+    const isSubMerchant =
+      (row.recordType ?? '').toUpperCase() === 'SUB_MERCHANT' ||
+      !!(row.parentMerchantName ?? '').trim() ||
+      row.subMerchantId != null;
+    if (isSubMerchant) return false;
+    const status = (row.merchantStatus ?? '').trim().toUpperCase();
+    return status === 'PENDING' || status === 'SUB_PENDING' || status === 'PENDING_APPROVAL';
   }
 
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
       ACTIVE: 'active',
       INACTIVE: 'inactive',
+      PENDING: 'pending',
+      SUB_PENDING: 'pending',
+      REJECTED: 'rejected',
     };
     return map[status] ?? 'default';
   }

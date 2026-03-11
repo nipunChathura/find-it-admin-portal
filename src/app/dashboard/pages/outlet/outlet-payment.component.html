@@ -1,0 +1,132 @@
+<div class="outlet-payment-page">
+  <div class="outlet-payment-page__header">
+    <h1 class="outlet-payment-page__title">Manage Payment</h1>
+    <button mat-raised-button color="primary" (click)="onAddPayment()" type="button" class="outlet-payment-page__add-btn">
+      <mat-icon>add</mat-icon>
+      Add Payment
+    </button>
+  </div>
+
+  <mat-card class="outlet-payment-page__card">
+    <div class="outlet-payment-page__filters">
+      <mat-form-field appearance="outline" class="outlet-payment-page__outlet">
+        <mat-label>Outlet</mat-label>
+        <input
+          matInput
+          [(ngModel)]="outletSearchText"
+          name="outletSearch"
+          placeholder="Search outlet name..."
+          [matAutocomplete]="outletAuto"
+          (ngModelChange)="onOutletSearchInput()"
+        />
+        @if (outletIdFilter !== '') {
+          <button mat-icon-button matSuffix type="button" (click)="clearOutletFilter()" aria-label="Clear outlet">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+        <mat-autocomplete
+          #outletAuto="matAutocomplete"
+          (optionSelected)="onOutletOptionSelected($event.option.value)"
+        >
+          @for (opt of outletOptions; track opt.outletId) {
+            <mat-option [value]="opt">{{ opt.outletName }}</mat-option>
+          }
+          @empty {
+            @if (outletSearchText.trim()) {
+              <mat-option disabled>No outlets found</mat-option>
+            }
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="outlet-payment-page__status">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="statusFilter" name="status">
+          @for (opt of statusOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <div class="outlet-payment-page__actions">
+        <button mat-raised-button color="primary" (click)="onSearch()" type="button">
+          <mat-icon>search</mat-icon>
+          Search
+        </button>
+        <button mat-raised-button (click)="onClear()" type="button" class="outlet-payment-page__clear-btn">
+          <mat-icon>refresh</mat-icon>
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <div class="outlet-payment-page__table-wrap">
+      <table mat-table [dataSource]="dataSource" matSort class="outlet-payment-page__table">
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let row" class="outlet-payment-page__actions-cell">
+            <button mat-icon-button matTooltip="Edit" (click)="onEdit(row)" type="button" aria-label="Edit payment">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Delete" (click)="onDelete(row)" type="button" aria-label="Delete payment">
+              <mat-icon>delete</mat-icon>
+            </button>
+            @if (row.receiptImage) {
+              <button mat-icon-button matTooltip="Show receipt" (click)="onShowReceipt(row)" type="button" aria-label="Show receipt">
+                <mat-icon>receipt</mat-icon>
+              </button>
+            }
+            @if (canShowApprove(row)) {
+              <button mat-icon-button matTooltip="Approve" (click)="onApprove(row)" type="button" aria-label="Approve payment" class="outlet-payment-page__action-approve">
+                <mat-icon>how_to_reg</mat-icon>
+              </button>
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="paymentId">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+          <td mat-cell *matCellDef="let row">{{ row.paymentId }}</td>
+        </ng-container>
+        <ng-container matColumnDef="outletName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Outlet</th>
+          <td mat-cell *matCellDef="let row">{{ row.outletName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+          <td mat-cell *matCellDef="let row">{{ row.amount | number:'1.2-2' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="paymentType">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+          <td mat-cell *matCellDef="let row">{{ row.paymentType }}</td>
+        </ng-container>
+        <ng-container matColumnDef="paidMonth">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Paid month</th>
+          <td mat-cell *matCellDef="let row">{{ row.paidMonth || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="paymentDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Payment date</th>
+          <td mat-cell *matCellDef="let row">{{ row.paymentDate || '—' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="paymentStatus">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="outlet-payment-page__status-badge" [class]="'outlet-payment-page__status-badge--' + getStatusClass(row.paymentStatus)">
+              {{ row.paymentStatus }}
+            </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <tr class="outlet-payment-page__no-data" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">No payments found.</td>
+        </tr>
+      </table>
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        [pageSize]="10"
+        showFirstLastButtons
+        aria-label="Paginate payments"
+      ></mat-paginator>
+    </div>
+  </mat-card>
+</div>

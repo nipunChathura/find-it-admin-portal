@@ -14,17 +14,32 @@
     </mat-form-field>
 
     @if (showDayOfWeek) {
-      <mat-form-field appearance="outline" class="schedule-form-dialog__field">
-        <mat-label>Day of Week</mat-label>
-        <mat-select formControlName="dayOfWeek">
-          @for (opt of dayOfWeekOptions; track opt.value) {
-            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+      @if (isEdit) {
+        <mat-form-field appearance="outline" class="schedule-form-dialog__field">
+          <mat-label>Day of Week</mat-label>
+          <mat-select formControlName="dayOfWeek">
+            @for (opt of dayOfWeekOptions; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+          @if (form.get('dayOfWeek')?.invalid && form.get('dayOfWeek')?.touched) {
+            <mat-error>Required for weekly schedule</mat-error>
           }
-        </mat-select>
-        @if (form.get('dayOfWeek')?.invalid && form.get('dayOfWeek')?.touched) {
-          <mat-error>Required for weekly schedule</mat-error>
-        }
-      </mat-form-field>
+        </mat-form-field>
+      } @else {
+        <mat-form-field appearance="outline" class="schedule-form-dialog__field">
+          <mat-label>Days of Week</mat-label>
+          <mat-select formControlName="daysOfWeek" multiple>
+            @for (opt of dayOfWeekOptions; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Select one or more days</mat-hint>
+          @if (form.get('daysOfWeek')?.invalid && form.get('daysOfWeek')?.touched) {
+            <mat-error>Select at least one day</mat-error>
+          }
+        </mat-form-field>
+      }
     }
 
     @if (showSingleDate) {
@@ -60,21 +75,51 @@
       </mat-form-field>
     }
 
-    <mat-form-field appearance="outline" class="schedule-form-dialog__field">
-      <mat-label>Open Time (HH:MM)</mat-label>
-      <input matInput type="time" formControlName="openTime" />
-      @if (form.get('openTime')?.invalid && form.get('openTime')?.touched) {
-        <mat-error>Valid time required (HH:MM)</mat-error>
-      }
-    </mat-form-field>
+    <div class="schedule-form-dialog__time-row">
+      <span class="schedule-form-dialog__time-label">Open Time</span>
+      <mat-form-field appearance="outline" class="schedule-form-dialog__time-field">
+        <mat-label>Hour</mat-label>
+        <mat-select [value]="openHour" (selectionChange)="setOpenTime($event.value, openMinute)">
+          @for (opt of hourOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="schedule-form-dialog__time-field">
+        <mat-label>Minute</mat-label>
+        <mat-select [value]="openMinute" (selectionChange)="setOpenTime(openHour, $event.value)">
+          @for (opt of minuteOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    @if (form.get('openTime')?.invalid && form.get('openTime')?.touched) {
+      <p class="schedule-form-dialog__time-error">Open time required</p>
+    }
 
-    <mat-form-field appearance="outline" class="schedule-form-dialog__field">
-      <mat-label>Close Time (HH:MM)</mat-label>
-      <input matInput type="time" formControlName="closeTime" />
-      @if (form.get('closeTime')?.invalid && form.get('closeTime')?.touched) {
-        <mat-error>Valid time required (HH:MM)</mat-error>
-      }
-    </mat-form-field>
+    <div class="schedule-form-dialog__time-row">
+      <span class="schedule-form-dialog__time-label">Close Time</span>
+      <mat-form-field appearance="outline" class="schedule-form-dialog__time-field">
+        <mat-label>Hour</mat-label>
+        <mat-select [value]="closeHour" (selectionChange)="setCloseTime($event.value, closeMinute)">
+          @for (opt of hourOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="schedule-form-dialog__time-field">
+        <mat-label>Minute</mat-label>
+        <mat-select [value]="closeMinute" (selectionChange)="setCloseTime(closeHour, $event.value)">
+          @for (opt of minuteOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    @if (form.get('closeTime')?.invalid && form.get('closeTime')?.touched) {
+      <p class="schedule-form-dialog__time-error">Close time required</p>
+    }
 
     <div class="schedule-form-dialog__checkbox">
       <mat-checkbox formControlName="isClosed">Closed</mat-checkbox>
