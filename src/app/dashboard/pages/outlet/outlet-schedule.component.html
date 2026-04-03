@@ -11,14 +11,25 @@
     <div class="schedule-page__filters">
       <mat-form-field appearance="outline" class="schedule-page__outlet">
         <mat-label>Outlet</mat-label>
-        <mat-select [(ngModel)]="selectedOutletId" name="outlet" (selectionChange)="onOutletChange()">
-          @for (o of outletOptions; track o.outletId) {
-            <mat-option [value]="o.outletId">{{ o.outletName }}</mat-option>
+        <input
+          matInput
+          [(ngModel)]="outletSearchText"
+          name="outletSearch"
+          placeholder="Type outlet name or ID..."
+          [matAutocomplete]="outletAuto"
+          (ngModelChange)="onOutletInputChange($event)"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+        <mat-autocomplete #outletAuto="matAutocomplete" autoActiveFirstOption>
+          @for (o of filteredOutletOptions; track o.outletId) {
+            <mat-option [value]="o.outletName" (click)="onOutletSelected(o)">
+              {{ o.outletName }} (#{{ o.outletId }})
+            </mat-option>
           }
           @empty {
-            <mat-option disabled>No outlets</mat-option>
+            <mat-option disabled>No matching outlets</mat-option>
           }
-        </mat-select>
+        </mat-autocomplete>
       </mat-form-field>
       <mat-form-field appearance="outline" class="schedule-page__date">
         <mat-label>Filter by date</mat-label>

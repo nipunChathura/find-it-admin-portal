@@ -10,6 +10,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialog } from '@angular/material/dialog';
 import { SnackbarService } from '../../../core/snackbar/snackbar.service';
@@ -114,6 +115,7 @@ function entryToUpdatePayload(entry: OutletScheduleEntry, row: OutletScheduleRow
     MatTableModule,
     MatFormFieldModule,
     MatInputModule,
+    MatAutocompleteModule,
     MatSelectModule,
     MatTooltipModule,
     MatDatepickerModule,
@@ -143,6 +145,7 @@ export class OutletScheduleComponent implements OnInit {
 
   outletOptions: { outletId: number; outletName: string }[] = [];
   selectedOutletId: number | null = null;
+  outletSearchText = '';
   searchText = '';
   /** Optional API filter: date (calendar picker). */
   filterDate: Date | null = null;
@@ -170,16 +173,31 @@ export class OutletScheduleComponent implements OnInit {
           outletId: item.row.outletId,
           outletName: item.row.outletName || `Outlet ${item.row.outletId}`,
         }));
-        if (this.outletOptions.length && !this.selectedOutletId) {
-          this.selectedOutletId = this.outletOptions[0].outletId;
-          this.loadSchedules();
-        }
       },
       error: () => (this.outletOptions = []),
     });
   }
 
-  onOutletChange(): void {
+  get filteredOutletOptions(): { outletId: number; outletName: string }[] {
+    const query = this.outletSearchText.trim().toLowerCase();
+    if (!query) return this.outletOptions;
+    return this.outletOptions.filter((outlet) =>
+      outlet.outletName.toLowerCase().includes(query) || String(outlet.outletId).includes(query),
+    );
+  }
+
+  onOutletInputChange(value: string): void {
+    this.outletSearchText = value;
+    if (!value.trim()) {
+      this.selectedOutletId = null;
+      this.allSchedules = [];
+      this.dataSource.data = [];
+    }
+  }
+
+  onOutletSelected(outlet: { outletId: number; outletName: string }): void {
+    this.selectedOutletId = outlet.outletId;
+    this.outletSearchText = outlet.outletName;
     this.loadSchedules();
   }
 
@@ -246,10 +264,13 @@ export class OutletScheduleComponent implements OnInit {
   }
 
   onClearFilters(): void {
+    this.selectedOutletId = null;
+    this.outletSearchText = '';
     this.searchText = '';
     this.filterDate = null;
     this.filterDayOfWeek = '';
-    this.loadSchedules();
+    this.allSchedules = [];
+    this.dataSource.data = [];
   }
 
   /** Reload schedules from API with current date/day filters. */
